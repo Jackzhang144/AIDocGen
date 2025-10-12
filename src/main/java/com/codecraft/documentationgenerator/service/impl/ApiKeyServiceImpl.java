@@ -1,5 +1,6 @@
 package com.codecraft.documentationgenerator.service.impl;
 
+import com.codecraft.documentationgenerator.constant.MessageConstants;
 import com.codecraft.documentationgenerator.entity.ApiKey;
 import com.codecraft.documentationgenerator.exception.BusinessException;
 import com.codecraft.documentationgenerator.mapper.ApiKeyMapper;
@@ -35,7 +36,7 @@ public class ApiKeyServiceImpl implements ApiKeyServiceInterface {
         log.info("Finding API key by ID: {}", id);
         ApiKey apiKey = apiKeyMapper.findById(id);
         if (apiKey == null) {
-            throw new BusinessException("API密钥不存在");
+            throw new BusinessException(MessageConstants.API_KEY_NOT_FOUND);
         }
         return apiKey;
     }
@@ -50,7 +51,7 @@ public class ApiKeyServiceImpl implements ApiKeyServiceInterface {
         log.info("Finding API key by hashed key: {}", hashedKey);
         ApiKey apiKey = apiKeyMapper.findByHashedKey(hashedKey);
         if (apiKey == null) {
-            throw new BusinessException("API密钥不存在");
+            throw new BusinessException(MessageConstants.API_KEY_NOT_FOUND);
         }
         return apiKey;
     }
@@ -74,7 +75,7 @@ public class ApiKeyServiceImpl implements ApiKeyServiceInterface {
         log.info("Deleting API key with ID: {}", id);
         ApiKey apiKey = apiKeyMapper.findById(id);
         if (apiKey == null) {
-            throw new BusinessException("API密钥不存在");
+            throw new BusinessException(MessageConstants.API_KEY_NOT_FOUND);
         }
         apiKeyMapper.deleteById(id);
     }

@@ -45,7 +45,7 @@ public class DocumentationGeneratorApplication {
             public void addCorsMappings(CorsRegistry registry) {
                 // 为/api路径下的所有端点配置CORS
                 registry.addMapping("/api/**")
-                        .allowedOrigins("*") // 允许所有来源
+                        .allowedOrigins("http://localhost:3000", "http://localhost:8080") // 仅允许本地开发环境
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS") // 允许的HTTP方法
                         .allowedHeaders("*"); // 允许所有请求头
             }

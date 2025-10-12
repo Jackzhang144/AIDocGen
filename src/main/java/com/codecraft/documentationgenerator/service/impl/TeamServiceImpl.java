@@ -1,5 +1,6 @@
 package com.codecraft.documentationgenerator.service.impl;
 
+import com.codecraft.documentationgenerator.constant.MessageConstants;
 import com.codecraft.documentationgenerator.entity.Team;
 import com.codecraft.documentationgenerator.exception.BusinessException;
 import com.codecraft.documentationgenerator.mapper.TeamMapper;
@@ -39,7 +40,7 @@ public class TeamServiceImpl implements TeamServiceInterface {
         log.info("Finding team by ID: {}", id);
         Team team = teamMapper.findById(id);
         if (team == null) {
-            throw new BusinessException("团队不存在");
+            throw new BusinessException(MessageConstants.TEAM_NOT_FOUND);
         }
         if (team != null) {
             // 解析members JSON字符串
@@ -58,7 +59,7 @@ public class TeamServiceImpl implements TeamServiceInterface {
         log.info("Finding team by admin: {}", admin);
         Team team = teamMapper.findByAdmin(admin);
         if (team == null) {
-            throw new BusinessException("团队不存在");
+            throw new BusinessException(MessageConstants.TEAM_NOT_FOUND);
         }
         if (team != null) {
             // 解析members JSON字符串
@@ -100,7 +101,7 @@ public class TeamServiceImpl implements TeamServiceInterface {
         log.info("Deleting team with ID: {}", id);
         Team team = teamMapper.findById(id);
         if (team == null) {
-            throw new BusinessException("团队不存在");
+            throw new BusinessException(MessageConstants.TEAM_NOT_FOUND);
         }
         teamMapper.deleteById(id);
     }

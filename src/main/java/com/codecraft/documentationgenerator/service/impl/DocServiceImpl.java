@@ -1,5 +1,6 @@
 package com.codecraft.documentationgenerator.service.impl;
 
+import com.codecraft.documentationgenerator.constant.MessageConstants;
 import com.codecraft.documentationgenerator.entity.Doc;
 import com.codecraft.documentationgenerator.exception.BusinessException;
 import com.codecraft.documentationgenerator.mapper.DocMapper;
@@ -35,7 +36,7 @@ public class DocServiceImpl implements DocServiceInterface {
         log.info("Finding document by ID: {}", id);
         Doc doc = docMapper.findById(id);
         if (doc == null) {
-            throw new BusinessException("文档不存在");
+            throw new BusinessException(MessageConstants.DOCUMENT_NOT_FOUND);
         }
         return doc;
     }
@@ -61,7 +62,7 @@ public class DocServiceImpl implements DocServiceInterface {
         log.info("Finding document by feedback ID: {}", feedbackId);
         Doc doc = docMapper.findByFeedbackId(feedbackId);
         if (doc == null) {
-            throw new BusinessException("文档不存在");
+            throw new BusinessException(MessageConstants.DOCUMENT_NOT_FOUND);
         }
         return doc;
     }
@@ -95,7 +96,7 @@ public class DocServiceImpl implements DocServiceInterface {
         log.info("Deleting document with ID: {}", id);
         Doc doc = docMapper.findById(id);
         if (doc == null) {
-            throw new BusinessException("文档不存在");
+            throw new BusinessException(MessageConstants.DOCUMENT_NOT_FOUND);
         }
         docMapper.deleteById(id);
     }

@@ -36,6 +36,7 @@ mvn -Dtest=AllTestsSuite test
    - BusinessExceptionTest
    - GlobalExceptionHandlerTest
    - ExceptionHandlingTest
+   - MessageConstantsTest
 
 2. **集成测试** - 测试多个组件协同工作，需要Spring上下文：
    - GlobalExceptionHandlerIntegrationTest
@@ -77,6 +78,10 @@ mvn -Dtest=AllTestsSuite test
    - GlobalExceptionHandler 对系统异常的处理
    - 集成测试验证异常处理在Web层的正确性
    - 服务层异常抛出的验证
+
+6. **常量类测试** - 覆盖消息常量类的测试：
+   - MessageConstants 类中所有常量的验证
+   - 私有构造函数的测试
 
 ## 异常处理测试详情
 

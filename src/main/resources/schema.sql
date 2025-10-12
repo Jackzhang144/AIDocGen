@@ -40,7 +40,7 @@ CREATE TABLE IF NOT EXISTS docs
     prompt_id            VARCHAR(255),
     actual_language      VARCHAR(50),
     timestamp            DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE SET NULL
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 );
 
 -- API密钥表

@@ -92,6 +92,32 @@ public class UserServiceImplTest {
     }
 
     @Test
+    void existsByEmail_UserExists_ReturnsTrue() {
+        // Given
+        when(userMapper.findByEmail("existing@example.com")).thenReturn(new User());
+
+        // When
+        boolean result = userService.existsByEmail("existing@example.com");
+
+        // Then
+        assertTrue(result);
+        verify(userMapper).findByEmail("existing@example.com");
+    }
+
+    @Test
+    void existsByEmail_UserNotExists_ReturnsFalse() {
+        // Given
+        when(userMapper.findByEmail("nonexistent@example.com")).thenReturn(null);
+
+        // When
+        boolean result = userService.existsByEmail("nonexistent@example.com");
+
+        // Then
+        assertFalse(result);
+        verify(userMapper).findByEmail("nonexistent@example.com");
+    }
+
+    @Test
     void createUser_ValidUser_CreatesUser() {
         // Given
         User user = new User();

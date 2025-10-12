@@ -1,5 +1,6 @@
 package com.codecraft.documentationgenerator.aop;
 
+import com.codecraft.documentationgenerator.constant.MessageConstants;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -42,7 +43,7 @@ public class LoginAspect {
         if (authentication == null || !authentication.isAuthenticated() ||
                 "anonymousUser".equals(authentication.getPrincipal())) {
             log.warn("User not logged in, returning unauthorized response");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("用户未登录");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(MessageConstants.USER_NOT_LOGGED_IN);
         }
 
         log.info("User is logged in, proceeding with method execution");

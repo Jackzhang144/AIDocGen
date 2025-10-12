@@ -1,5 +1,6 @@
 package com.codecraft.documentationgenerator.exception;
 
+import com.codecraft.documentationgenerator.constant.MessageConstants;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -51,7 +52,7 @@ public class GlobalExceptionHandler {
         
         Map<String, Object> response = new HashMap<>();
         response.put("code", HttpStatus.INTERNAL_SERVER_ERROR.value());
-        response.put("message", "服务器异常");
+        response.put("message", MessageConstants.SERVER_ERROR);
         response.put("data", null);
         
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);

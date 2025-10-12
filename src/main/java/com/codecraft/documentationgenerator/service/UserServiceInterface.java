@@ -31,6 +31,14 @@ public interface UserServiceInterface {
     User findByEmail(String email);
 
     /**
+     * 检查用户是否存在
+     *
+     * @param email 用户邮箱
+     * @return boolean 用户是否存在
+     */
+    boolean existsByEmail(String email);
+
+    /**
      * 创建新用户
      *
      * @param user 用户对象

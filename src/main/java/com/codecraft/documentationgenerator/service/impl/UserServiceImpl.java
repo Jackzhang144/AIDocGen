@@ -1,5 +1,6 @@
 package com.codecraft.documentationgenerator.service.impl;
 
+import com.codecraft.documentationgenerator.constant.MessageConstants;
 import com.codecraft.documentationgenerator.entity.User;
 import com.codecraft.documentationgenerator.exception.BusinessException;
 import com.codecraft.documentationgenerator.mapper.UserMapper;
@@ -36,7 +37,7 @@ public class UserServiceImpl implements UserServiceInterface {
         log.info("Finding user by ID: {}", id);
         User user = userMapper.findById(id);
         if (user == null) {
-            throw new BusinessException("用户不存在");
+            throw new BusinessException(MessageConstants.USER_NOT_FOUND);
         }
         return user;
     }
@@ -51,9 +52,21 @@ public class UserServiceImpl implements UserServiceInterface {
         log.info("Finding user by email: {}", email);
         User user = userMapper.findByEmail(email);
         if (user == null) {
-            throw new BusinessException("用户不存在");
+            throw new BusinessException(MessageConstants.USER_NOT_FOUND);
         }
         return user;
+    }
+
+    /**
+     * 检查用户是否存在
+     *
+     * @param email 用户邮箱
+     * @return boolean 用户是否存在
+     */
+    public boolean existsByEmail(String email) {
+        log.info("Checking if user exists by email: {}", email);
+        User user = userMapper.findByEmail(email);
+        return user != null;
     }
 
     /**
@@ -64,13 +77,13 @@ public class UserServiceImpl implements UserServiceInterface {
     public void createUser(User user) {
         log.info("Creating new user with email: {}", user.getEmail());
         if (user.getEmail() == null || user.getEmail().isEmpty()) {
-            throw new BusinessException("邮箱不能为空");
+            throw new BusinessException(MessageConstants.EMAIL_CANNOT_BE_EMPTY);
         }
         
         // 检查用户是否已存在
         User existingUser = userMapper.findByEmail(user.getEmail());
         if (existingUser != null) {
-            throw new BusinessException("用户已存在");
+            throw new BusinessException(MessageConstants.USER_ALREADY_EXISTS);
         }
         
         user.setCreatedAt(LocalDateTime.now());
@@ -110,7 +123,7 @@ public class UserServiceImpl implements UserServiceInterface {
         log.info("Deleting user with ID: {}", id);
         User user = userMapper.findById(id);
         if (user == null) {
-            throw new BusinessException("用户不存在");
+            throw new BusinessException(MessageConstants.USER_NOT_FOUND);
         }
         userMapper.deleteById(id);
     }
