@@ -8,7 +8,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
  * DocumentationGenerator应用程序主类
- * 
+ * <p>
  * 这是一个基于Spring Boot 3的AI驱动代码文档生成器后端服务
  * 主要功能包括：
  * - 用户管理（注册、登录、订阅）
@@ -16,7 +16,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
  * - API密钥管理
  * - 团队协作功能
  * - 多语言代码支持
- * 
+ *
  * @author CodeCraft
  * @version 1.0
  */
@@ -25,7 +25,7 @@ public class DocumentationGeneratorApplication {
 
     /**
      * 应用程序入口点
-     * 
+     *
      * @param args 命令行参数
      */
     public static void main(String[] args) {
@@ -35,7 +35,7 @@ public class DocumentationGeneratorApplication {
     /**
      * 配置跨域资源共享(CORS)
      * 允许前端应用访问后端API
-     * 
+     *
      * @return WebMvcConfigurer CORS配置
      */
     @Bean

@@ -1,6 +1,7 @@
 package com.codecraft.documentationgenerator.entity;
 
 import lombok.Data;
+
 import java.time.LocalDateTime;
 
 @Data

@@ -1,17 +1,17 @@
 package com.codecraft.documentationgenerator.config;
 
 import io.swagger.v3.oas.models.OpenAPI;
-import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.Contact;
+import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
  * Knife4j API文档配置类
- * 
+ * <p>
  * 配置OpenAPI规范的元数据信息，用于生成API文档
- * 
+ *
  * @author CodeCraft
  * @version 1.0
  */
@@ -20,7 +20,7 @@ public class Knife4jConfig {
 
     /**
      * 自定义OpenAPI配置
-     * 
+     *
      * @return OpenAPI 配置对象
      */
     @Bean
