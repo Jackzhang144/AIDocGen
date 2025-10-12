@@ -11,7 +11,7 @@ import com.codecraft.documentationgenerator.model.Synopsis;
  * @author CodeCraft
  * @version 1.0
  */
-public interface CodeParsingService {
+public interface CodeParsingServiceInterface {
 
     /**
      * 解析代码并生成概要信息

@@ -1,20 +1,18 @@
-package com.codecraft.documentationgenerator.mapper;
+package com.codecraft.documentationgenerator.service;
 
 import com.codecraft.documentationgenerator.entity.ApiKey;
-import org.apache.ibatis.annotations.*;
 
 import java.util.List;
 
 /**
- * API密钥Mapper接口
+ * API密钥服务接口
  * <p>
- * 定义API密钥数据访问接口，用于操作api_keys表
+ * 提供API密钥相关的业务逻辑处理
  *
  * @author CodeCraft
  * @version 1.0
  */
-@Mapper
-public interface ApiKeyMapper {
+public interface ApiKeyServiceInterface {
 
     /**
      * 根据ID查找API密钥
@@ -22,7 +20,6 @@ public interface ApiKeyMapper {
      * @param id API密钥ID
      * @return ApiKey API密钥对象
      */
-    @Select("SELECT * FROM api_keys WHERE id = #{id}")
     ApiKey findById(Long id);
 
     /**
@@ -31,24 +28,20 @@ public interface ApiKeyMapper {
      * @param hashedKey 哈希后的API密钥
      * @return ApiKey API密钥对象
      */
-    @Select("SELECT * FROM api_keys WHERE hashed_key = #{hashedKey}")
     ApiKey findByHashedKey(String hashedKey);
 
     /**
-     * 插入新的API密钥
+     * 创建新的API密钥
      *
      * @param apiKey API密钥对象
      */
-    @Insert("INSERT INTO api_keys(hashed_key, email, purpose) VALUES(#{hashedKey}, #{email}, #{purpose})")
-    @Options(useGeneratedKeys = true, keyProperty = "id")
-    void insert(ApiKey apiKey);
+    void createApiKey(ApiKey apiKey);
 
     /**
      * 根据ID删除API密钥
      *
      * @param id API密钥ID
      */
-    @Delete("DELETE FROM api_keys WHERE id = #{id}")
     void deleteById(Long id);
 
     /**
@@ -56,6 +49,5 @@ public interface ApiKeyMapper {
      *
      * @return List<ApiKey> API密钥列表
      */
-    @Select("SELECT * FROM api_keys")
     List<ApiKey> findAll();
 }

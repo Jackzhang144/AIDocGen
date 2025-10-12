@@ -6,6 +6,8 @@ import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
  * Knife4j API文档配置类
@@ -16,7 +18,7 @@ import org.springframework.context.annotation.Configuration;
  * @version 1.0
  */
 @Configuration
-public class Knife4jConfig {
+public class Knife4jConfig implements WebMvcConfigurer {
 
     /**
      * 自定义OpenAPI配置
@@ -37,5 +39,16 @@ public class Knife4jConfig {
                         .license(new License() // 许可证信息
                                 .name("Apache 2.0")
                                 .url("http://www.apache.org/licenses/LICENSE-2.0.html")));
+    }
+    
+    /**
+     * 配置静态资源处理器，确保Knife4j的静态资源可以被正确访问
+     * 
+     * @param registry 资源处理器注册器
+     */
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        registry.addResourceHandler("doc.html").addResourceLocations("classpath:/META-INF/resources/");
+        registry.addResourceHandler("/webjars/**").addResourceLocations("classpath:/META-INF/resources/webjars/");
     }
 }

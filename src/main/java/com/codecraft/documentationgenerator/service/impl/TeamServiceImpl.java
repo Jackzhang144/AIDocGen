@@ -2,8 +2,9 @@ package com.codecraft.documentationgenerator.service.impl;
 
 import com.codecraft.documentationgenerator.entity.Team;
 import com.codecraft.documentationgenerator.mapper.TeamMapper;
-import com.codecraft.documentationgenerator.service.TeamService;
+import com.codecraft.documentationgenerator.service.TeamServiceInterface;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -18,8 +19,9 @@ import java.util.List;
  * @author CodeCraft
  * @version 1.0
  */
+@Slf4j
 @Service
-public class TeamServiceImpl implements TeamService {
+public class TeamServiceImpl implements TeamServiceInterface {
 
     @Autowired
     private TeamMapper teamMapper;
@@ -33,6 +35,7 @@ public class TeamServiceImpl implements TeamService {
      * @return 团队对象，如果未找到则返回null
      */
     public Team findById(Long id) {
+        log.info("Finding team by ID: {}", id);
         Team team = teamMapper.findById(id);
         if (team != null) {
             // 解析members JSON字符串
@@ -48,6 +51,7 @@ public class TeamServiceImpl implements TeamService {
      * @return 团队对象，如果未找到则返回null
      */
     public Team findByAdmin(String admin) {
+        log.info("Finding team by admin: {}", admin);
         Team team = teamMapper.findByAdmin(admin);
         if (team != null) {
             // 解析members JSON字符串
@@ -62,6 +66,7 @@ public class TeamServiceImpl implements TeamService {
      * @param team 团队对象
      */
     public void createTeam(Team team) {
+        log.info("Creating new team with admin: {}", team.getAdmin());
         // 将members数组转换为JSON字符串
         team.setMembers(serializeMembers(team.getMembers()));
         teamMapper.insert(team);
@@ -73,6 +78,7 @@ public class TeamServiceImpl implements TeamService {
      * @param team 团队对象
      */
     public void updateMembers(Team team) {
+        log.info("Updating members for team ID: {}", team.getId());
         // 将members数组转换为JSON字符串
         team.setMembers(serializeMembers(team.getMembers()));
         teamMapper.updateMembers(team);
@@ -84,6 +90,7 @@ public class TeamServiceImpl implements TeamService {
      * @param id 团队ID
      */
     public void deleteById(Long id) {
+        log.info("Deleting team with ID: {}", id);
         teamMapper.deleteById(id);
     }
 
@@ -93,6 +100,7 @@ public class TeamServiceImpl implements TeamService {
      * @return 团队列表
      */
     public List<Team> findAll() {
+        log.info("Finding all teams");
         List<Team> teams = teamMapper.findAll();
         // 解析每个team的members JSON字符串
         for (Team team : teams) {

@@ -2,7 +2,15 @@ package com.codecraft.documentationgenerator.service;
 
 import com.codecraft.documentationgenerator.model.Synopsis;
 
-public interface AiDocumentationService {
+/**
+ * AI文档生成服务接口
+ * <p>
+ * 提供基于AI的文档生成相关业务逻辑处理
+ *
+ * @author CodeCraft
+ * @version 1.0
+ */
+public interface AiDocumentationServiceInterface {
 
     /**
      * 生成函数文档字符串

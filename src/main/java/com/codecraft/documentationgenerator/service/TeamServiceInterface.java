@@ -13,7 +13,7 @@ import java.util.List;
  * @author CodeCraft
  * @version 1.0
  */
-public interface TeamService {
+public interface TeamServiceInterface {
 
     /**
      * 根据ID查找团队

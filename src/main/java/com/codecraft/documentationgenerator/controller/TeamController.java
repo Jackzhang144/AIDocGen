@@ -1,9 +1,11 @@
 package com.codecraft.documentationgenerator.controller;
 
+import com.codecraft.documentationgenerator.aop.RequireLogin;
 import com.codecraft.documentationgenerator.entity.Team;
-import com.codecraft.documentationgenerator.service.TeamService;
+import com.codecraft.documentationgenerator.service.TeamServiceInterface;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,12 +20,13 @@ import java.util.List;
  * @author CodeCraft
  * @version 1.0
  */
+@Slf4j
 @RestController
 @RequestMapping("/api/teams")
 public class TeamController {
 
     @Autowired
-    private TeamService teamService;
+    private TeamServiceInterface teamService;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -33,8 +36,10 @@ public class TeamController {
      * @param id 团队ID
      * @return 团队对象
      */
+    @RequireLogin
     @GetMapping("/{id}")
     public Team getTeamById(@PathVariable Long id) {
+        log.info("Fetching team by ID: {}", id);
         return teamService.findById(id);
     }
 
@@ -44,8 +49,10 @@ public class TeamController {
      * @param admin 管理员邮箱
      * @return 团队对象
      */
+    @RequireLogin
     @GetMapping("/admin/{admin}")
     public Team getTeamByAdmin(@PathVariable String admin) {
+        log.info("Fetching team by admin: {}", admin);
         return teamService.findByAdmin(admin);
     }
 
@@ -55,8 +62,10 @@ public class TeamController {
      * @param teamRequest 团队请求对象
      * @throws JsonProcessingException JSON处理异常
      */
+    @RequireLogin
     @PostMapping
     public void createTeam(@RequestBody TeamRequest teamRequest) throws JsonProcessingException {
+        log.info("Creating new team with admin: {}", teamRequest.getAdmin());
         Team team = new Team();
         team.setAdmin(teamRequest.getAdmin());
         // 将members数组转换为JSON字符串
@@ -71,8 +80,10 @@ public class TeamController {
      * @param teamRequest 团队请求对象
      * @throws JsonProcessingException JSON处理异常
      */
+    @RequireLogin
     @PutMapping("/members")
     public void updateTeamMembers(@RequestBody TeamRequest teamRequest) throws JsonProcessingException {
+        log.info("Updating team members for team ID: {}", teamRequest.getId());
         Team team = new Team();
         team.setId(teamRequest.getId());
         team.setAdmin(teamRequest.getAdmin());
@@ -87,8 +98,10 @@ public class TeamController {
      *
      * @param id 团队ID
      */
+    @RequireLogin
     @DeleteMapping("/{id}")
     public void deleteTeam(@PathVariable Long id) {
+        log.info("Deleting team with ID: {}", id);
         teamService.deleteById(id);
     }
 
@@ -97,8 +110,10 @@ public class TeamController {
      *
      * @return 团队列表
      */
+    @RequireLogin
     @GetMapping
     public List<Team> getAllTeams() {
+        log.info("Fetching all teams");
         return teamService.findAll();
     }
 

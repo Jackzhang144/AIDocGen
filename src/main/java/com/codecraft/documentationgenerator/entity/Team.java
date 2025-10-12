@@ -1,10 +1,32 @@
 package com.codecraft.documentationgenerator.entity;
 
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 
+/**
+ * 团队实体类
+ * <p>
+ * 表示用户团队信息
+ * 对应数据库中的teams表
+ *
+ * @author CodeCraft
+ * @version 1.0
+ */
+@Slf4j
 @Data
 public class Team {
+    /**
+     * 团队ID，主键
+     */
     private Long id;
+
+    /**
+     * 团队管理员邮箱
+     */
     private String admin;
-    private String members; // 改为String类型，存储JSON格式的成员列表
+
+    /**
+     * 团队成员列表，存储JSON格式的成员列表
+     */
+    private String members;
 }
