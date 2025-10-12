@@ -1,0 +1,48 @@
+spring:
+  application:
+    name: DocumentationGenerator
+  datasource:
+    url: jdbc:mysql://localhost:3306/doc_generator?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=GMT%2B8&allowPublicKeyRetrieval=true
+    username: root
+    password: ""
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY}
+      chat:
+        options:
+          model: gpt-3.5-turbo
+
+mybatis:
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  mapper-locations: classpath:mapper/*.xml
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+
+# JWT配置
+jwt:
+  secret: mySecretKeyForDocumentationGeneratorWhichIsVerySecureAndLongEnough
+
+# Knife4j配置
+knife4j:
+  enable: true
+  production: false
+  basic:
+    enable: false
+  setting:
+    language: zh_cn
+    enable-swagger-models: true
+    enable-document-manage: true
+  group-configs:
+    - group: default
+      paths-to-match: /**
+      packages-to-scan: com.codecraft.documentationgenerator.controller

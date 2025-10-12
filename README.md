@@ -34,25 +34,30 @@ AI驱动的代码文档生成器后端服务，基于Spring Boot 3、MySQL和MyB
 ### 1. 数据库设置
 
 ```sql
-CREATE
-DATABASE doc_generator CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE doc_generator CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 ```
 
 然后执行 `src/main/resources/schema.sql` 中的SQL脚本创建表结构。
 
 ### 2. 配置环境变量
 
-在 `src/main/resources/application.properties` 中配置：
+在 `src/main/resources/application.yml` 中配置：
 
-```properties
+```yaml
 # 数据库配置
-spring.datasource.url=jdbc:mysql://localhost:3306/doc_generator?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=GMT%2B8
-spring.datasource.username=your_username
-spring.datasource.password=your_password
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/doc_generator?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=GMT%2B8
+    username: your_username
+    password: your_password
 # OpenAI配置（可选，用于文档生成功能）
-spring.ai.openai.api-key=your_openai_api_key
-# JWT密钥配置（可选，用于用户认证）
-# jwt.secret=your_jwt_secret_key
+spring:
+  ai:
+    openai:
+      api-key: your_openai_api_key
+# JWT密钥配置（建议在生产环境中修改为安全的密钥）
+jwt:
+  secret: your_jwt_secret_key
 ```
 
 ### 3. 构建和运行
@@ -105,7 +110,7 @@ src/
 │   │       └── DocumentationGeneratorApplication.java  # 应用入口
 │   └── resources/
 │       ├── mapper/               # MyBatis XML映射文件
-│       ├── application.properties # 配置文件
+│       ├── application.yml       # 配置文件
 │       └── schema.sql            # 数据库脚本
 └── test/                         # 测试代码
 ```
@@ -135,10 +140,26 @@ src/
 
 - 基于JWT的用户认证机制
 - 使用Spring Security进行权限控制
--
-自定义AOP注解[@RequireLogin](file:///Users/jackzhang/Code/IdeaProjects/DocumentationGenerator_Back/src/main/java/com/codecraft/documentationgenerator/aop/RequireLogin.java)
-实现方法级权限控制
+- 自定义AOP注解[@RequireLogin](file:///Users/jackzhang/Code/IdeaProjects/DocumentationGenerator_Back/src/main/java/com/codecraft/documentationgenerator/aop/RequireLogin.java)实现方法级权限控制
 - 密码使用BCrypt加密存储
+
+### 5. 全局异常处理
+
+项目实现了全局异常处理机制，确保：
+
+1. **统一异常响应格式**
+    - 所有异常都返回统一的JSON格式：`{code: 状态码, message: 错误信息, data: null}`
+    - 业务异常返回400状态码和具体错误信息
+    - 系统异常返回500状态码和通用错误信息
+
+2. **安全性**
+    - 防止敏感系统信息泄露给前端
+    - 对外只暴露必要的错误信息
+
+3. **日志记录**
+    - 详细记录异常信息，便于问题排查
+    - 业务异常记录具体消息内容
+    - 系统异常记录完整堆栈信息
 
 ## 数据库设计
 
@@ -184,9 +205,7 @@ src/
 ### 安全设计
 
 1. **JWT认证**：用户登录后生成JWT token，后续请求需在Header中携带token
-2. **方法级权限控制**
-   ：通过[@RequireLogin](file:///Users/jackzhang/Code/IdeaProjects/DocumentationGenerator_Back/src/main/java/com/codecraft/documentationgenerator/aop/RequireLogin.java)
-   注解保护敏感接口
+2. **方法级权限控制**：通过[@RequireLogin](file:///Users/jackzhang/Code/IdeaProjects/DocumentationGenerator_Back/src/main/java/com/codecraft/documentationgenerator/aop/RequireLogin.java)注解保护敏感接口
 3. **密码加密**：用户密码使用BCrypt强加密算法存储
 4. **SQL注入防护**：使用MyBatis参数化查询防止SQL注入
 
@@ -202,12 +221,8 @@ src/
 
 项目使用Spring AOP实现横切关注点的统一处理：
 
-1. **权限检查切面
-   **：[@RequireLogin](file:///Users/jackzhang/Code/IdeaProjects/DocumentationGenerator_Back/src/main/java/com/codecraft/documentationgenerator/aop/RequireLogin.java)
-   注解用于保护需要认证的接口
-2.
-所有被[@RequireLogin](file:///Users/jackzhang/Code/IdeaProjects/DocumentationGenerator_Back/src/main/java/com/codecraft/documentationgenerator/aop/RequireLogin.java)
-注解标记的方法在执行前都会先检查用户是否已登录
+1. **权限检查切面**：[@RequireLogin](file:///Users/jackzhang/Code/IdeaProjects/DocumentationGenerator_Back/src/main/java/com/codecraft/documentationgenerator/aop/RequireLogin.java)注解用于保护需要认证的接口
+2. 所有被[@RequireLogin](file:///Users/jackzhang/Code/IdeaProjects/DocumentationGenerator_Back/src/main/java/com/codecraft/documentationgenerator/aop/RequireLogin.java)注解标记的方法在执行前都会先检查用户是否已登录
 3. 未登录用户访问受保护接口时会返回401未授权错误
 
 ### 全局异常处理
@@ -265,7 +280,7 @@ src/
 
 ### 1. 启动时报数据库连接错误
 
-请检查application.properties中的数据库配置是否正确，确保MySQL服务正在运行。
+请检查application.yml中的数据库配置是否正确，确保MySQL服务正在运行。
 
 ### 2. API文档无法访问
 

@@ -64,6 +64,8 @@ curl -X GET http://localhost:8080/api/users/1 \
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.xxxx"
 ```
 
+JWT密钥可以在 `application.yml` 文件中通过 `jwt.secret` 属性进行配置。在生产环境中，建议使用足够复杂和安全的密钥。
+
 ## 错误处理
 
 ### 统一错误响应格式
@@ -133,6 +135,158 @@ curl -X GET http://localhost:8080/api/users/1 \
   "message": "服务器异常",
   "data": null
 }
+```
+
+## 文档生成功能
+
+### 1. 生成函数文档
+
+向 `/api/writer/write/v3` 发送POST请求来生成文档：
+
+```bash
+curl -X POST http://localhost:8080/api/writer/write/v3 \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.xxxx" \
+  -d '{
+    "code": "function add(a, b) { return a + b; }",
+    "languageId": "javascript",
+    "isSelection": true
+  }'
+```
+
+### 2. 根据上下文生成文档
+
+如果未选择特定代码，可以使用上下文信息生成文档：
+
+```bash
+curl -X POST http://localhost:8080/api/writer/write/v3/no-selection \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.xxxx" \
+  -d '{
+    "context": "function add(a, b) { return a + b; }",
+    "languageId": "javascript",
+    "line": "function add(a, b) { return a + b; }"
+  }'
+```
+
+## 用户管理
+
+### 1. 获取用户信息
+
+```bash
+curl -X GET http://localhost:8080/api/users/1 \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.xxxx"
+```
+
+### 2. 更新用户信息
+
+```bash
+curl -X PUT http://localhost:8080/api/users/login \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.xxxx" \
+  -d '{
+    "id": 1,
+    "lastLoginAt": "2023-01-01T00:00:00"
+  }'
+```
+
+## 文档管理
+
+### 1. 创建文档
+
+```bash
+curl -X POST http://localhost:8080/api/docs \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.xxxx" \
+  -d '{
+    "userId": 1,
+    "email": "user@example.com",
+    "output": "生成的文档内容",
+    "language": "javascript"
+  }'
+```
+
+### 2. 获取文档列表
+
+```bash
+curl -X GET http://localhost:8080/api/docs/user/1 \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.xxxx"
+```
+
+### 3. 更新文档反馈
+
+```bash
+curl -X PUT http://localhost:8080/api/docs/feedback \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.xxxx" \
+  -d '{
+    "id": 1,
+    "feedback": 5,
+    "feedbackId": "feedback-uuid"
+  }'
+```
+
+## 团队管理
+
+### 1. 创建团队
+
+```bash
+curl -X POST http://localhost:8080/api/teams \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.xxxx" \
+  -d '{
+    "admin": "user@example.com",
+    "members": ["member1@example.com", "member2@example.com"]
+  }'
+```
+
+### 2. 获取团队信息
+
+```bash
+curl -X GET http://localhost:8080/api/teams/admin/user@example.com \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.xxxx"
+```
+
+### 3. 更新团队成员
+
+```bash
+curl -X PUT http://localhost:8080/api/teams/members \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.xxxx" \
+  -d '{
+    "id": 1,
+    "admin": "user@example.com",
+    "members": ["member1@example.com", "member2@example.com", "member3@example.com"]
+  }'
+```
+
+## API密钥管理
+
+### 1. 创建API密钥
+
+```bash
+curl -X POST http://localhost:8080/api/apikeys \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.xxxx" \
+  -d '{
+    "hashedKey": "hashed-api-key",
+    "email": "user@example.com",
+    "purpose": "测试使用"
+  }'
+```
+
+### 2. 获取API密钥列表
+
+```bash
+curl -X GET http://localhost:8080/api/apikeys \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.xxxx"
+```
+
+### 3. 删除API密钥
+
+```bash
+curl -X DELETE http://localhost:8080/api/apikeys/1 \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.xxxx"
 ```
 
 ## 最佳实践

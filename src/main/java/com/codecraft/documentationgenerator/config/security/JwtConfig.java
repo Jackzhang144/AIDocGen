@@ -2,6 +2,7 @@ package com.codecraft.documentationgenerator.config.security;
 
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
@@ -25,7 +26,8 @@ public class JwtConfig {
      * <p>
      * 用于签名和验证JWT令牌的密钥
      */
-    private final String SECRET_KEY = "mySecretKeyForDocumentationGeneratorWhichIsVerySecureAndLongEnough";
+    @Value("${jwt.secret:mySecretKeyForDocumentationGeneratorWhichIsVerySecureAndLongEnough}")
+    private String SECRET_KEY;
 
     /**
      * 创建并返回用于JWT签名的密钥

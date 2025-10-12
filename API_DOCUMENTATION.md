@@ -16,6 +16,8 @@
 Authorization: Bearer your_jwt_token_here
 ```
 
+JWT密钥可以在 `application.yml` 文件中通过 `jwt.secret` 属性进行配置。在生产环境中，建议使用足够复杂和安全的密钥。
+
 ## 错误响应格式
 
 所有API接口在发生错误时都返回统一的JSON格式：
