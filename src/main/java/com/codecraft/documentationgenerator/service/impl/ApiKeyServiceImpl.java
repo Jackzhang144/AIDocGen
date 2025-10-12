@@ -1,6 +1,7 @@
 package com.codecraft.documentationgenerator.service.impl;
 
 import com.codecraft.documentationgenerator.entity.ApiKey;
+import com.codecraft.documentationgenerator.exception.BusinessException;
 import com.codecraft.documentationgenerator.mapper.ApiKeyMapper;
 import com.codecraft.documentationgenerator.service.ApiKeyServiceInterface;
 import lombok.extern.slf4j.Slf4j;
@@ -32,7 +33,11 @@ public class ApiKeyServiceImpl implements ApiKeyServiceInterface {
      */
     public ApiKey findById(Long id) {
         log.info("Finding API key by ID: {}", id);
-        return apiKeyMapper.findById(id);
+        ApiKey apiKey = apiKeyMapper.findById(id);
+        if (apiKey == null) {
+            throw new BusinessException("API密钥不存在");
+        }
+        return apiKey;
     }
 
     /**
@@ -43,7 +48,11 @@ public class ApiKeyServiceImpl implements ApiKeyServiceInterface {
      */
     public ApiKey findByHashedKey(String hashedKey) {
         log.info("Finding API key by hashed key: {}", hashedKey);
-        return apiKeyMapper.findByHashedKey(hashedKey);
+        ApiKey apiKey = apiKeyMapper.findByHashedKey(hashedKey);
+        if (apiKey == null) {
+            throw new BusinessException("API密钥不存在");
+        }
+        return apiKey;
     }
 
     /**
@@ -63,6 +72,10 @@ public class ApiKeyServiceImpl implements ApiKeyServiceInterface {
      */
     public void deleteById(Long id) {
         log.info("Deleting API key with ID: {}", id);
+        ApiKey apiKey = apiKeyMapper.findById(id);
+        if (apiKey == null) {
+            throw new BusinessException("API密钥不存在");
+        }
         apiKeyMapper.deleteById(id);
     }
 

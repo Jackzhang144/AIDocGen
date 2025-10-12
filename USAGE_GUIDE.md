@@ -64,159 +64,24 @@ curl -X GET http://localhost:8080/api/users/1 \
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.xxxx"
 ```
 
-## 文档生成功能
-
-### 1. 生成函数文档
-
-向 `/api/writer/write/v3` 发送POST请求来生成文档：
-
-```bash
-curl -X POST http://localhost:8080/api/writer/write/v3 \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.xxxx" \
-  -d '{
-    "code": "function add(a, b) { return a + b; }",
-    "languageId": "javascript",
-    "isSelection": true
-  }'
-```
-
-### 2. 根据上下文生成文档
-
-如果未选择特定代码，可以使用上下文信息生成文档：
-
-```bash
-curl -X POST http://localhost:8080/api/writer/write/v3/no-selection \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.xxxx" \
-  -d '{
-    "context": "function add(a, b) { return a + b; }",
-    "languageId": "javascript",
-    "line": "function add(a, b) { return a + b; }"
-  }'
-```
-
-## 用户管理
-
-### 1. 获取用户信息
-
-```bash
-curl -X GET http://localhost:8080/api/users/1 \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.xxxx"
-```
-
-### 2. 更新用户信息
-
-```bash
-curl -X PUT http://localhost:8080/api/users/login \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.xxxx" \
-  -d '{
-    "id": 1,
-    "lastLoginAt": "2023-01-01T00:00:00"
-  }'
-```
-
-## 文档管理
-
-### 1. 创建文档
-
-```bash
-curl -X POST http://localhost:8080/api/docs \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.xxxx" \
-  -d '{
-    "userId": 1,
-    "email": "user@example.com",
-    "output": "生成的文档内容",
-    "language": "javascript"
-  }'
-```
-
-### 2. 获取文档列表
-
-```bash
-curl -X GET http://localhost:8080/api/docs/user/1 \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.xxxx"
-```
-
-### 3. 更新文档反馈
-
-```bash
-curl -X PUT http://localhost:8080/api/docs/feedback \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.xxxx" \
-  -d '{
-    "id": 1,
-    "feedback": 5,
-    "feedbackId": "feedback-uuid"
-  }'
-```
-
-## 团队管理
-
-### 1. 创建团队
-
-```bash
-curl -X POST http://localhost:8080/api/teams \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.xxxx" \
-  -d '{
-    "admin": "user@example.com",
-    "members": ["member1@example.com", "member2@example.com"]
-  }'
-```
-
-### 2. 获取团队信息
-
-```bash
-curl -X GET http://localhost:8080/api/teams/admin/user@example.com \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.xxxx"
-```
-
-### 3. 更新团队成员
-
-```bash
-curl -X PUT http://localhost:8080/api/teams/members \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.xxxx" \
-  -d '{
-    "id": 1,
-    "admin": "user@example.com",
-    "members": ["member1@example.com", "member2@example.com", "member3@example.com"]
-  }'
-```
-
-## API密钥管理
-
-### 1. 创建API密钥
-
-```bash
-curl -X POST http://localhost:8080/api/apikeys \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.xxxx" \
-  -d '{
-    "hashedKey": "hashed-api-key",
-    "email": "user@example.com",
-    "purpose": "测试使用"
-  }'
-```
-
-### 2. 获取API密钥列表
-
-```bash
-curl -X GET http://localhost:8080/api/apikeys \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.xxxx"
-```
-
-### 3. 删除API密钥
-
-```bash
-curl -X DELETE http://localhost:8080/api/apikeys/1 \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.xxxx"
-```
-
 ## 错误处理
+
+### 统一错误响应格式
+
+所有API接口在发生错误时都返回统一的JSON格式：
+
+```json
+{
+  "code": 400,
+  "message": "具体的错误信息",
+  "data": null
+}
+```
+
+其中：
+- **code**: HTTP状态码（如400表示业务错误，500表示系统错误）
+- **message**: 错误描述信息
+- **data**: 错误相关的附加数据（通常为null）
 
 ### 1. 认证失败 (401)
 
@@ -224,11 +89,9 @@ curl -X DELETE http://localhost:8080/api/apikeys/1 \
 
 ```json
 {
-  "timestamp": "2023-01-01T00:00:00.000+00:00",
-  "status": 401,
-  "error": "Unauthorized",
+  "code": 401,
   "message": "用户未登录",
-  "path": "/api/users/1"
+  "data": null
 }
 ```
 
@@ -242,25 +105,33 @@ curl -X DELETE http://localhost:8080/api/apikeys/1 \
 
 ```json
 {
-  "timestamp": "2023-01-01T00:00:00.000+00:00",
-  "status": 404,
-  "error": "Not Found",
-  "message": "No message available",
-  "path": "/api/users/999"
+  "code": 404,
+  "message": "文档不存在",
+  "data": null
 }
 ```
 
 ### 4. 请求参数错误 (400)
 
-当请求参数不正确时，会返回400错误：
+当请求参数不正确或业务逻辑出错时，会返回400错误：
 
 ```json
 {
-  "timestamp": "2023-01-01T00:00:00.000+00:00",
-  "status": 400,
-  "error": "Bad Request",
-  "message": "Validation failed",
-  "path": "/api/auth/register"
+  "code": 400,
+  "message": "用户不存在",
+  "data": null
+}
+```
+
+### 5. 系统内部错误 (500)
+
+当系统发生未预期的错误时，会返回500错误：
+
+```json
+{
+  "code": 500,
+  "message": "服务器异常",
+  "data": null
 }
 ```
 

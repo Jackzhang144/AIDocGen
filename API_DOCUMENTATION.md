@@ -16,6 +16,23 @@
 Authorization: Bearer your_jwt_token_here
 ```
 
+## 错误响应格式
+
+所有API接口在发生错误时都返回统一的JSON格式：
+
+```json
+{
+  "code": 400,
+  "message": "具体的错误信息",
+  "data": null
+}
+```
+
+其中：
+- **code**: HTTP状态码（如400表示业务错误，500表示系统错误）
+- **message**: 错误描述信息
+- **data**: 错误相关的附加数据（通常为null）
+
 ## 认证相关接口
 
 ### 用户注册

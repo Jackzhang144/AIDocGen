@@ -1,6 +1,7 @@
 package com.codecraft.documentationgenerator.service.impl;
 
 import com.codecraft.documentationgenerator.entity.Doc;
+import com.codecraft.documentationgenerator.exception.BusinessException;
 import com.codecraft.documentationgenerator.mapper.DocMapper;
 import com.codecraft.documentationgenerator.service.DocServiceInterface;
 import lombok.extern.slf4j.Slf4j;
@@ -32,7 +33,11 @@ public class DocServiceImpl implements DocServiceInterface {
      */
     public Doc findById(Long id) {
         log.info("Finding document by ID: {}", id);
-        return docMapper.findById(id);
+        Doc doc = docMapper.findById(id);
+        if (doc == null) {
+            throw new BusinessException("文档不存在");
+        }
+        return doc;
     }
 
     /**
@@ -54,7 +59,11 @@ public class DocServiceImpl implements DocServiceInterface {
      */
     public Doc findByFeedbackId(String feedbackId) {
         log.info("Finding document by feedback ID: {}", feedbackId);
-        return docMapper.findByFeedbackId(feedbackId);
+        Doc doc = docMapper.findByFeedbackId(feedbackId);
+        if (doc == null) {
+            throw new BusinessException("文档不存在");
+        }
+        return doc;
     }
 
     /**
@@ -84,6 +93,10 @@ public class DocServiceImpl implements DocServiceInterface {
      */
     public void deleteById(Long id) {
         log.info("Deleting document with ID: {}", id);
+        Doc doc = docMapper.findById(id);
+        if (doc == null) {
+            throw new BusinessException("文档不存在");
+        }
         docMapper.deleteById(id);
     }
 
