@@ -39,7 +39,8 @@ public interface ApiKeyMapper {
      *
      * @param apiKey API密钥对象
      */
-    @Insert("INSERT INTO api_keys(hashed_key, email, purpose) VALUES(#{hashedKey}, #{email}, #{purpose})")
+    @Insert("INSERT INTO api_keys(hashed_key, first_name, last_name, email, purpose, created_at) " +
+            "VALUES(#{hashedKey}, #{firstName}, #{lastName}, #{email}, #{purpose}, #{createdAt})")
     @Options(useGeneratedKeys = true, keyProperty = "id")
     void insert(ApiKey apiKey);
 

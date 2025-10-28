@@ -3,6 +3,9 @@ package com.codecraft.documentationgenerator.entity;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 /**
  * 团队实体类
  * <p>
@@ -28,5 +31,10 @@ public class Team {
     /**
      * 团队成员列表，存储JSON格式的成员列表
      */
-    private String members;
+    private List<String> members;
+
+    /**
+     * 创建时间
+     */
+    private LocalDateTime createdAt;
 }

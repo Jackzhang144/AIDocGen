@@ -32,6 +32,21 @@ public interface TeamServiceInterface {
     Team findByAdmin(String admin);
 
     /**
+     * 根据管理员邮箱查找团队（可为空）
+     */
+    Team findByAdminOrNull(String admin);
+
+    /**
+     * 根据成员邮箱查找团队
+     */
+    Team findByMember(String memberEmail);
+
+    /**
+     * 查找与邮箱关联的团队（管理员或成员）
+     */
+    Team findByEmail(String email);
+
+    /**
      * 创建新团队
      *
      * @param team 团队对象
@@ -44,6 +59,16 @@ public interface TeamServiceInterface {
      * @param team 团队对象
      */
     void updateMembers(Team team);
+
+    /**
+     * 邀请成员加入团队
+     */
+    Team inviteMember(String adminEmail, String memberEmail);
+
+    /**
+     * 移除团队成员
+     */
+    void removeMember(String adminEmail, String memberEmail);
 
     /**
      * 根据ID删除团队

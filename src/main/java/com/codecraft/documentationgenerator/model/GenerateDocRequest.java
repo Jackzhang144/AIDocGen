@@ -25,6 +25,21 @@ public class GenerateDocRequest {
     private String languageId;
 
     /**
+     * 用户邮箱
+     */
+    private String email;
+
+    /**
+     * 是否需要添加注释
+     */
+    private Boolean commented;
+
+    /**
+     * 外部用户唯一标识
+     */
+    private String userId;
+
+    /**
      * 文件名
      */
     private String fileName;
@@ -33,6 +48,16 @@ public class GenerateDocRequest {
      * 上下文信息
      */
     private String context;
+
+    /**
+     * 请求来源
+     */
+    private String source;
+
+    /**
+     * 文本宽度
+     */
+    private Integer width;
 
     /**
      * 位置信息
@@ -53,4 +78,27 @@ public class GenerateDocRequest {
      * 文档格式
      */
     private String docFormat;
+
+    /**
+     * 文档风格
+     */
+    private String docStyle;
+
+    /**
+     * 自定义配置
+     */
+    private CustomDocSettings custom;
+
+    /**
+     * 允许的Synopsis类型（预览模式使用）
+     */
+    private java.util.List<String> allowedKinds;
+
+    @Data
+    public static class CustomDocSettings {
+        private String template;
+        private String author;
+        private String date;
+        private String language;
+    }
 }

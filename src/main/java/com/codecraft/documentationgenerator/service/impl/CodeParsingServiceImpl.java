@@ -29,13 +29,23 @@ public class CodeParsingServiceImpl implements CodeParsingServiceInterface {
     public Synopsis getSynopsis(String code, String languageId, String file) {
         log.info("Getting synopsis for code in language: {}", languageId);
 
-        // 这里应该实现代码解析逻辑
-        // 由于Java没有像Tree-sitter这样的库，我们需要使用其他方式实现
-        // 在实际实现中，可以考虑使用ANTLR或其他解析器
-
         Synopsis synopsis = new Synopsis();
-        synopsis.setKind("unspecified");
-        // 简化实现，实际项目中需要根据具体语言进行详细解析
+        String trimmed = code == null ? "" : code.trim();
+        String normalizedLanguage = languageId == null ? "" : languageId.toLowerCase();
+
+        if (isClassDefinition(trimmed)) {
+            synopsis.setKind("class");
+            synopsis.setProperties(null);
+        } else if (isInterfaceDefinition(trimmed)) {
+            synopsis.setKind("typedef");
+        } else if (isFunctionDefinition(trimmed, normalizedLanguage)) {
+            synopsis.setKind("function");
+            synopsis.setParams(ParamParser.parseParameters(trimmed));
+            synopsis.setReturns(null);
+        } else {
+            synopsis.setKind("unspecified");
+        }
+
         log.debug("Synopsis generated with kind: {}", synopsis.getKind());
         return synopsis;
     }
@@ -52,9 +62,76 @@ public class CodeParsingServiceImpl implements CodeParsingServiceInterface {
     public String getCode(String context, String languageId, Integer location, String line) {
         log.info("Getting code from context in language: {}", languageId);
 
-        // 实现代码提取逻辑
-        // 简化实现，直接返回行内容
-        log.debug("Code extracted, length: {}", line.length());
-        return line;
+        if (line != null && !line.isEmpty()) {
+            log.debug("Returning provided line for code extraction");
+            return line;
+        }
+
+        if (context == null || context.isEmpty()) {
+            return "";
+        }
+
+        if (location != null) {
+            String[] lines = context.split("\\n");
+            int index = Math.min(Math.max(location, 0), lines.length - 1);
+            return lines[index];
+        }
+
+        return context;
+    }
+
+    private boolean isClassDefinition(String code) {
+        return code.startsWith("class ") || code.contains(" class ");
+    }
+
+    private boolean isInterfaceDefinition(String code) {
+        return code.startsWith("interface ") || code.startsWith("type ") || code.contains(" interface ");
+    }
+
+    private boolean isFunctionDefinition(String code, String languageId) {
+        return code.matches("(?s).*(def |function |fun |[a-zA-Z0-9_]+\\s*\\().*")
+                || ("javascript".equals(languageId) && code.contains("=>"));
+    }
+
+    private static class ParamParser {
+        static java.util.List<Synopsis.Param> parseParameters(String code) {
+            java.util.List<Synopsis.Param> params = new java.util.ArrayList<>();
+            int openIndex = code.indexOf('(');
+            int closeIndex = code.indexOf(')');
+            if (openIndex < 0 || closeIndex < 0 || closeIndex <= openIndex) {
+                return params;
+            }
+
+            String inside = code.substring(openIndex + 1, closeIndex);
+            if (inside.trim().isEmpty()) {
+                return params;
+            }
+
+            String[] rawParams = inside.split(",");
+            for (String raw : rawParams) {
+                String cleaned = raw.trim();
+                if (cleaned.isEmpty()) {
+                    continue;
+                }
+                Synopsis.Param param = new Synopsis.Param();
+                String typePart = null;
+                if (cleaned.contains(":")) {
+                    String[] colonSplit = cleaned.split(":", 2);
+                    cleaned = colonSplit[0].trim();
+                    typePart = colonSplit[1].trim();
+                }
+
+                String[] tokens = cleaned.split("\\s+");
+                String nameToken = tokens[tokens.length - 1].replaceAll("=.*$", "");
+                param.setName(nameToken);
+                if (typePart != null && !typePart.isEmpty()) {
+                    param.setType(typePart);
+                } else if (tokens.length > 1) {
+                    param.setType(tokens[0]);
+                }
+                params.add(param);
+            }
+            return params;
+        }
     }
 }

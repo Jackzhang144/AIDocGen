@@ -23,6 +23,11 @@ public class User {
     private Long id;
 
     /**
+     * 外部系统中的用户唯一标识
+     */
+    private String userUid;
+
+    /**
      * 用户邮箱
      */
     private String email;
@@ -33,6 +38,21 @@ public class User {
     private String name;
 
     /**
+     * 用户名（名）
+     */
+    private String givenName;
+
+    /**
+     * 用户姓氏
+     */
+    private String familyName;
+
+    /**
+     * 用户头像
+     */
+    private String picture;
+
+    /**
      * 用户密码，存储加密后的密码
      */
     private String password;
@@ -41,6 +61,11 @@ public class User {
      * 用户创建时间
      */
     private LocalDateTime createdAt;
+
+    /**
+     * 用户最后活跃时间
+     */
+    private LocalDateTime lastActiveAt;
 
     /**
      * 用户最后登录时间

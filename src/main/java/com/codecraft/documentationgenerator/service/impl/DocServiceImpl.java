@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -47,7 +48,7 @@ public class DocServiceImpl implements DocServiceInterface {
      * @param userId 用户ID
      * @return List<Doc> 文档列表
      */
-    public List<Doc> findByUserId(Long userId) {
+    public List<Doc> findByUserId(String userId) {
         log.info("Finding documents by user ID: {}", userId);
         return docMapper.findByUserId(userId);
     }
@@ -85,6 +86,41 @@ public class DocServiceImpl implements DocServiceInterface {
     public void updateFeedback(Doc doc) {
         log.info("Updating feedback for document ID: {}", doc.getId());
         docMapper.updateFeedback(doc);
+    }
+
+    /**
+     * 统计用户在指定时间段内生成的文档数量
+     *
+     * @param userId 用户ID
+     * @param since  起始时间
+     * @return 生成的文档数量
+     */
+    public int countDocsByUserSince(String userId, LocalDateTime since) {
+        log.info("Counting documents for user {} since {}", userId, since);
+        return docMapper.countDocsByUserSince(userId, since);
+    }
+
+    /**
+     * 判断用户是否有正向反馈
+     *
+     * @param userId 用户ID
+     * @return 是否存在正向反馈
+     */
+    public boolean hasPositiveFeedback(String userId) {
+        log.info("Checking positive feedback for user {}", userId);
+        return docMapper.hasPositiveFeedback(userId);
+    }
+
+    /**
+     * 获取用户最近的文档
+     *
+     * @param userId 用户ID
+     * @param limit  返回数量
+     * @return 文档列表
+     */
+    public List<Doc> findRecentDocs(String userId, int limit) {
+        log.info("Fetching {} recent documents for user {}", limit, userId);
+        return docMapper.findRecentDocs(userId, limit);
     }
 
     /**

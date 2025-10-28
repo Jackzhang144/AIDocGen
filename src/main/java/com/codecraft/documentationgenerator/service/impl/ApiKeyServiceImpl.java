@@ -63,6 +63,9 @@ public class ApiKeyServiceImpl implements ApiKeyServiceInterface {
      */
     public void createApiKey(ApiKey apiKey) {
         log.info("Creating new API key for email: {}", apiKey.getEmail());
+        if (apiKey.getCreatedAt() == null) {
+            apiKey.setCreatedAt(java.time.LocalDateTime.now());
+        }
         apiKeyMapper.insert(apiKey);
     }
 

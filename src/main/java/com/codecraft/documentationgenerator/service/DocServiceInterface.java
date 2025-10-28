@@ -28,7 +28,7 @@ public interface DocServiceInterface {
      * @param userId 用户ID
      * @return List<Doc> 文档列表
      */
-    List<Doc> findByUserId(Long userId);
+    List<Doc> findByUserId(String userId);
 
     /**
      * 根据反馈ID查找文档
@@ -51,6 +51,32 @@ public interface DocServiceInterface {
      * @param doc 文档对象
      */
     void updateFeedback(Doc doc);
+
+    /**
+     * 统计用户在指定时间段内生成的文档数量
+     *
+     * @param userId 用户ID
+     * @param since  起始时间
+     * @return 文档数量
+     */
+    int countDocsByUserSince(String userId, java.time.LocalDateTime since);
+
+    /**
+     * 判断用户是否存在正向反馈
+     *
+     * @param userId 用户ID
+     * @return 是否存在正向反馈
+     */
+    boolean hasPositiveFeedback(String userId);
+
+    /**
+     * 获取用户最近的文档
+     *
+     * @param userId 用户ID
+     * @param limit  返回数量
+     * @return 文档列表
+     */
+    List<Doc> findRecentDocs(String userId, int limit);
 
     /**
      * 根据ID删除文档

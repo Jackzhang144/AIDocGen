@@ -32,7 +32,7 @@ public interface DocMapper {
      * @return List<Doc> 文档列表
      */
     @Select("SELECT * FROM docs WHERE user_id = #{userId}")
-    List<Doc> findByUserId(Long userId);
+    List<Doc> findByUserId(String userId);
 
     /**
      * 根据反馈ID查找文档
@@ -64,6 +64,35 @@ public interface DocMapper {
      */
     @Update("UPDATE docs SET feedback = #{feedback} WHERE feedback_id = #{feedbackId}")
     void updateFeedback(Doc doc);
+
+    /**
+     * 统计用户在指定时间后的文档数量
+     *
+     * @param userId 用户ID
+     * @param since  起始时间
+     * @return 文档数量
+     */
+    @Select("SELECT COUNT(*) FROM docs WHERE user_id = #{userId} AND timestamp >= #{since}")
+    int countDocsByUserSince(@Param("userId") String userId, @Param("since") java.time.LocalDateTime since);
+
+    /**
+     * 判断用户是否有正向反馈
+     *
+     * @param userId 用户ID
+     * @return 是否存在正向反馈
+     */
+    @Select("SELECT COUNT(*) > 0 FROM docs WHERE user_id = #{userId} AND feedback = 1")
+    boolean hasPositiveFeedback(String userId);
+
+    /**
+     * 获取用户最近的文档
+     *
+     * @param userId 用户ID
+     * @param limit  限制数量
+     * @return 文档列表
+     */
+    @Select("SELECT * FROM docs WHERE user_id = #{userId} ORDER BY timestamp DESC LIMIT #{limit}")
+    List<Doc> findRecentDocs(@Param("userId") String userId, @Param("limit") int limit);
 
     /**
      * 根据ID删除文档

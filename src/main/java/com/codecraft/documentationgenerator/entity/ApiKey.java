@@ -3,6 +3,8 @@ package com.codecraft.documentationgenerator.entity;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
+import java.time.LocalDateTime;
+
 /**
  * API密钥实体类
  * <p>
@@ -21,6 +23,16 @@ public class ApiKey {
     private Long id;
 
     /**
+     * 用户名
+     */
+    private String firstName;
+
+    /**
+     * 用户姓氏
+     */
+    private String lastName;
+
+    /**
      * 哈希后的API密钥
      */
     private String hashedKey;
@@ -34,4 +46,9 @@ public class ApiKey {
      * API密钥用途
      */
     private String purpose;
+
+    /**
+     * 创建时间
+     */
+    private LocalDateTime createdAt;
 }

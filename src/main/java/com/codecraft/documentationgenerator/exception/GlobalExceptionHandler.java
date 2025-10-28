@@ -31,13 +31,43 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<Map<String, Object>> handleBusinessException(BusinessException ex) {
         log.error("Business exception occurred: {}", ex.getMessage());
-        
+
         Map<String, Object> response = new HashMap<>();
         response.put("code", HttpStatus.BAD_REQUEST.value());
         response.put("message", ex.getMessage());
         response.put("data", null);
-        
+
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
+    /**
+     * 处理需要认证的异常
+     *
+     * @param ex 认证异常
+     * @return 错误响应
+     */
+    @ExceptionHandler(RequiresAuthenticationException.class)
+    public ResponseEntity<Map<String, Object>> handleRequiresAuthException(RequiresAuthenticationException ex) {
+        log.warn("Authentication required: {}", ex.getMessage());
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("requiresAuth", true);
+        response.put("message", ex.getDisplayMessage());
+        response.put("button", ex.getButton());
+        response.put("error", ex.getError());
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+    }
+
+    /**
+     * 处理未授权异常
+     */
+    @ExceptionHandler(UnauthorizedException.class)
+    public ResponseEntity<Map<String, Object>> handleUnauthorizedException(UnauthorizedException ex) {
+        log.warn("Unauthorized access: {}", ex.getMessage());
+        Map<String, Object> response = new HashMap<>();
+        response.put("error", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
     }
 
     /**

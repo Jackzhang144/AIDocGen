@@ -5,10 +5,15 @@ USE doc_generator;
 CREATE TABLE IF NOT EXISTS users
 (
     id                 BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_uid           VARCHAR(255) UNIQUE,
     email              VARCHAR(255) NOT NULL UNIQUE,
     name               VARCHAR(255),
+    given_name         VARCHAR(255),
+    family_name        VARCHAR(255),
+    picture            VARCHAR(1024),
     password           VARCHAR(255),
     created_at         DATETIME DEFAULT CURRENT_TIMESTAMP,
+    last_active_at     DATETIME,
     last_login_at      DATETIME,
     refresh_token      TEXT,
     plan               VARCHAR(50),
@@ -20,7 +25,7 @@ CREATE TABLE IF NOT EXISTS users
 CREATE TABLE IF NOT EXISTS docs
 (
     id                   BIGINT AUTO_INCREMENT PRIMARY KEY,
-    user_id              BIGINT,
+    user_id              VARCHAR(255),
     email                VARCHAR(255),
     output               TEXT,
     prompt               TEXT NOT NULL,
@@ -40,7 +45,7 @@ CREATE TABLE IF NOT EXISTS docs
     prompt_id            VARCHAR(255),
     actual_language      VARCHAR(50),
     timestamp            DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+    INDEX idx_docs_user_id (user_id)
 );
 
 -- API密钥表
@@ -48,8 +53,11 @@ CREATE TABLE IF NOT EXISTS api_keys
 (
     id         BIGINT AUTO_INCREMENT PRIMARY KEY,
     hashed_key VARCHAR(255) NOT NULL UNIQUE,
+    first_name VARCHAR(255),
+    last_name  VARCHAR(255),
     email      VARCHAR(255),
-    purpose    VARCHAR(255)
+    purpose    VARCHAR(255),
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 -- 团队表
@@ -57,5 +65,6 @@ CREATE TABLE IF NOT EXISTS teams
 (
     id      BIGINT AUTO_INCREMENT PRIMARY KEY,
     admin   VARCHAR(255) NOT NULL,
-    members JSON
+    members JSON NOT NULL DEFAULT (JSON_ARRAY()),
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );

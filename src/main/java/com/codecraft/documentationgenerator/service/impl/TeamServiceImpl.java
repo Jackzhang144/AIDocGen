@@ -5,11 +5,12 @@ import com.codecraft.documentationgenerator.entity.Team;
 import com.codecraft.documentationgenerator.exception.BusinessException;
 import com.codecraft.documentationgenerator.mapper.TeamMapper;
 import com.codecraft.documentationgenerator.service.TeamServiceInterface;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -28,8 +29,6 @@ public class TeamServiceImpl implements TeamServiceInterface {
     @Autowired
     private TeamMapper teamMapper;
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
-
     /**
      * 根据ID查找团队
      *
@@ -42,10 +41,7 @@ public class TeamServiceImpl implements TeamServiceInterface {
         if (team == null) {
             throw new BusinessException(MessageConstants.TEAM_NOT_FOUND);
         }
-        if (team != null) {
-            // 解析members JSON字符串
-            team.setMembers(parseMembers(team.getMembers()));
-        }
+        ensureMembersList(team);
         return team;
     }
 
@@ -61,11 +57,28 @@ public class TeamServiceImpl implements TeamServiceInterface {
         if (team == null) {
             throw new BusinessException(MessageConstants.TEAM_NOT_FOUND);
         }
-        if (team != null) {
-            // 解析members JSON字符串
-            team.setMembers(parseMembers(team.getMembers()));
-        }
+        ensureMembersList(team);
         return team;
+    }
+
+    public Team findByAdminOrNull(String admin) {
+        Team team = teamMapper.findByAdmin(admin);
+        ensureMembersList(team);
+        return team;
+    }
+
+    public Team findByMember(String memberEmail) {
+        Team team = teamMapper.findByMember(memberEmail);
+        ensureMembersList(team);
+        return team;
+    }
+
+    public Team findByEmail(String email) {
+        Team team = findByAdminOrNull(email);
+        if (team != null) {
+            return team;
+        }
+        return findByMember(email);
     }
 
     /**
@@ -75,8 +88,8 @@ public class TeamServiceImpl implements TeamServiceInterface {
      */
     public void createTeam(Team team) {
         log.info("Creating new team with admin: {}", team.getAdmin());
-        // 将members数组转换为JSON字符串
-        team.setMembers(serializeMembers(team.getMembers()));
+        ensureMembersList(team);
+        team.setCreatedAt(LocalDateTime.now());
         teamMapper.insert(team);
     }
 
@@ -87,9 +100,43 @@ public class TeamServiceImpl implements TeamServiceInterface {
      */
     public void updateMembers(Team team) {
         log.info("Updating members for team ID: {}", team.getId());
-        // 将members数组转换为JSON字符串
-        team.setMembers(serializeMembers(team.getMembers()));
+        ensureMembersList(team);
         teamMapper.updateMembers(team);
+    }
+
+    public Team inviteMember(String adminEmail, String memberEmail) {
+        log.info("Inviting member {} to team {}", memberEmail, adminEmail);
+        Team team = findByAdminOrNull(adminEmail);
+        if (team == null) {
+            team = new Team();
+            team.setAdmin(adminEmail);
+            team.setMembers(new ArrayList<>());
+            createTeam(team);
+        }
+
+        ensureMembersList(team);
+        if (team.getMembers().contains(memberEmail)) {
+            throw new BusinessException("Member already invited to the team");
+        }
+
+        if (team.getMembers().size() >= 2) {
+            throw new BusinessException("Cannot have more than 3 members in team");
+        }
+
+        team.getMembers().add(memberEmail);
+        updateMembers(team);
+        return team;
+    }
+
+    public void removeMember(String adminEmail, String memberEmail) {
+        log.info("Removing member {} from team {}", memberEmail, adminEmail);
+        Team team = findByAdminOrNull(adminEmail);
+        if (team == null) {
+            return;
+        }
+        ensureMembersList(team);
+        team.getMembers().remove(memberEmail);
+        updateMembers(team);
     }
 
     /**
@@ -114,34 +161,18 @@ public class TeamServiceImpl implements TeamServiceInterface {
     public List<Team> findAll() {
         log.info("Finding all teams");
         List<Team> teams = teamMapper.findAll();
-        // 解析每个team的members JSON字符串
         for (Team team : teams) {
-            team.setMembers(parseMembers(team.getMembers()));
+            ensureMembersList(team);
         }
         return teams;
     }
 
-    /**
-     * 将成员列表序列化为JSON字符串
-     *
-     * @param members 成员列表JSON字符串
-     * @return 序列化的JSON字符串
-     */
-    private String serializeMembers(String members) {
-        // 这里假设members字段已经是JSON格式的字符串
-        // 如果需要从String[]转换，可以使用objectMapper.writeValueAsString()
-        return members;
-    }
-
-    /**
-     * 解析JSON字符串为成员列表
-     *
-     * @param membersJson 成员列表JSON字符串
-     * @return 解析后的JSON字符串
-     */
-    private String parseMembers(String membersJson) {
-        // 这里假设直接返回JSON字符串
-        // 如果需要转换为String[]，可以使用objectMapper.readValue()
-        return membersJson;
+    private void ensureMembersList(Team team) {
+        if (team == null) {
+            return;
+        }
+        if (team.getMembers() == null) {
+            team.setMembers(new ArrayList<>());
+        }
     }
 }

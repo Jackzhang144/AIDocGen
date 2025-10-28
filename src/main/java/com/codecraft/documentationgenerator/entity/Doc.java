@@ -23,7 +23,7 @@ public class Doc {
     /**
      * 用户ID，外键关联users表
      */
-    private Long userId;
+    private String userId;
 
     /**
      * 用户邮箱

@@ -1,166 +1,112 @@
 package com.codecraft.documentationgenerator.controller;
 
-import com.codecraft.documentationgenerator.aop.RequireLogin;
 import com.codecraft.documentationgenerator.entity.Team;
+import com.codecraft.documentationgenerator.entity.User;
+import com.codecraft.documentationgenerator.exception.BusinessException;
 import com.codecraft.documentationgenerator.service.TeamServiceInterface;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.codecraft.documentationgenerator.service.UserServiceInterface;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 团队控制器
- * <p>
- * 处理团队相关的HTTP请求
- * 包括团队的创建、查询、更新和删除操作
- *
- * @author CodeCraft
- * @version 1.0
+ * 团队相关接口，实现 Mintlify 团队协作能力
  */
 @Slf4j
 @RestController
-@RequestMapping("/api/teams")
+@RequestMapping("/team")
 public class TeamController {
 
-    @Autowired
-    private TeamServiceInterface teamService;
+    private final TeamServiceInterface teamService;
+    private final UserServiceInterface userService;
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
-
-    /**
-     * 根据ID获取团队信息
-     *
-     * @param id 团队ID
-     * @return 团队对象
-     */
-    @RequireLogin
-    @GetMapping("/{id}")
-    public Team getTeamById(@PathVariable Long id) {
-        log.info("Fetching team by ID: {}", id);
-        return teamService.findById(id);
+    public TeamController(TeamServiceInterface teamService, UserServiceInterface userService) {
+        this.teamService = teamService;
+        this.userService = userService;
     }
 
-    /**
-     * 根据管理员邮箱获取团队信息
-     *
-     * @param admin 管理员邮箱
-     * @return 团队对象
-     */
-    @RequireLogin
-    @GetMapping("/admin/{admin}")
-    public Team getTeamByAdmin(@PathVariable String admin) {
-        log.info("Fetching team by admin: {}", admin);
-        return teamService.findByAdmin(admin);
-    }
-
-    /**
-     * 创建新团队
-     *
-     * @param teamRequest 团队请求对象
-     * @throws JsonProcessingException JSON处理异常
-     */
-    @RequireLogin
-    @PostMapping
-    public void createTeam(@RequestBody TeamRequest teamRequest) throws JsonProcessingException {
-        log.info("Creating new team with admin: {}", teamRequest.getAdmin());
-        Team team = new Team();
-        team.setAdmin(teamRequest.getAdmin());
-        // 将members数组转换为JSON字符串
-        String membersJson = objectMapper.writeValueAsString(teamRequest.getMembers());
-        team.setMembers(membersJson);
-        teamService.createTeam(team);
-    }
-
-    /**
-     * 更新团队成员
-     *
-     * @param teamRequest 团队请求对象
-     * @throws JsonProcessingException JSON处理异常
-     */
-    @RequireLogin
-    @PutMapping("/members")
-    public void updateTeamMembers(@RequestBody TeamRequest teamRequest) throws JsonProcessingException {
-        log.info("Updating team members for team ID: {}", teamRequest.getId());
-        Team team = new Team();
-        team.setId(teamRequest.getId());
-        team.setAdmin(teamRequest.getAdmin());
-        // 将members数组转换为JSON字符串
-        String membersJson = objectMapper.writeValueAsString(teamRequest.getMembers());
-        team.setMembers(membersJson);
-        teamService.updateMembers(team);
-    }
-
-    /**
-     * 删除团队
-     *
-     * @param id 团队ID
-     */
-    @RequireLogin
-    @DeleteMapping("/{id}")
-    public void deleteTeam(@PathVariable Long id) {
-        log.info("Deleting team with ID: {}", id);
-        teamService.deleteById(id);
-    }
-
-    /**
-     * 获取所有团队
-     *
-     * @return 团队列表
-     */
-    @RequireLogin
     @GetMapping
-    public List<Team> getAllTeams() {
-        log.info("Fetching all teams");
-        return teamService.findAll();
+    public ResponseEntity<TeamResponse> getTeam(@RequestParam String email) {
+        Team team = teamService.findByEmail(email);
+        if (team == null) {
+            TeamResponse response = new TeamResponse();
+            response.setAdmin(email);
+            response.setMembers(List.of());
+            return ResponseEntity.ok(response);
+        }
+
+        List<TeamMember> members = new ArrayList<>();
+        for (String memberEmail : team.getMembers()) {
+            TeamMember teamMember = new TeamMember();
+            teamMember.setEmail(memberEmail);
+            teamMember.setInvitePending(userService.findByEmailOrNull(memberEmail) == null);
+            members.add(teamMember);
+        }
+
+        TeamResponse response = new TeamResponse();
+        response.setAdmin(team.getAdmin());
+        response.setMembers(members);
+        return ResponseEntity.ok(response);
     }
 
-    /**
-     * 团队请求DTO类
-     * <p>
-     * 用于处理团队创建和更新的请求数据
-     */
-    public static class TeamRequest {
-        /**
-         * 团队ID
-         */
-        private Long id;
+    @PostMapping("/invite")
+    public ResponseEntity<Void> inviteMember(@RequestBody TeamInviteRequest request) {
+        validateInviteRequest(request);
 
-        /**
-         * 管理员邮箱
-         */
+        if (Boolean.TRUE.equals(request.getShouldCreateTeam())) {
+            User admin = userService.findByEmailOrNull(request.getFromEmail());
+            if (admin == null || admin.getPlan() == null || !"premium".equalsIgnoreCase(admin.getPlan())) {
+                throw new BusinessException("You can only invite others on a premium account");
+            }
+
+            teamService.inviteMember(request.getFromEmail(), request.getToEmail());
+        } else if (request.getUserId() != null) {
+            log.info("Invite attempt without premium plan from {}", request.getFromEmail());
+        }
+
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/invite")
+    public ResponseEntity<Void> revokeInvite(@RequestBody TeamInviteRequest request) {
+        if (request.getFromEmail() == null || request.getToEmail() == null) {
+            throw new BusinessException("Missing email input");
+        }
+
+        teamService.removeMember(request.getFromEmail(), request.getToEmail());
+        return ResponseEntity.ok().build();
+    }
+
+    private void validateInviteRequest(TeamInviteRequest request) {
+        if (request.getFromEmail() == null || request.getToEmail() == null || request.getToEmail().isEmpty()) {
+            throw new BusinessException("Missing email input");
+        }
+        if (request.getFromEmail().equalsIgnoreCase(request.getToEmail())) {
+            throw new BusinessException("Cannot add yourself");
+        }
+    }
+
+    @Data
+    public static class TeamResponse {
         private String admin;
+        private List<TeamMember> members;
+    }
 
-        /**
-         * 成员列表
-         */
-        private String[] members;
+    @Data
+    public static class TeamMember {
+        private String email;
+        private boolean invitePending;
+    }
 
-        // Getters and setters
-        public Long getId() {
-            return id;
-        }
-
-        public void setId(Long id) {
-            this.id = id;
-        }
-
-        public String getAdmin() {
-            return admin;
-        }
-
-        public void setAdmin(String admin) {
-            this.admin = admin;
-        }
-
-        public String[] getMembers() {
-            return members;
-        }
-
-        public void setMembers(String[] members) {
-            this.members = members;
-        }
+    @Data
+    public static class TeamInviteRequest {
+        private String userId;
+        private String fromEmail;
+        private String toEmail;
+        private Boolean shouldCreateTeam;
     }
 }

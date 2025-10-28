@@ -50,7 +50,35 @@ public class UserServiceImpl implements UserServiceInterface {
      */
     public User findByEmail(String email) {
         log.info("Finding user by email: {}", email);
-        User user = userMapper.findByEmail(email);
+        User user = findByEmailOrNull(email);
+        if (user == null) {
+            throw new BusinessException(MessageConstants.USER_NOT_FOUND);
+        }
+        return user;
+    }
+
+    /**
+     * 根据邮箱查找用户（可为空）
+     *
+     * @param email 用户邮箱
+     * @return User 或 null
+     */
+    public User findByEmailOrNull(String email) {
+        if (email == null || email.isEmpty()) {
+            return null;
+        }
+        return userMapper.findByEmail(email);
+    }
+
+    /**
+     * 根据外部用户UID查找用户
+     *
+     * @param userUid 外部用户唯一标识
+     * @return User 用户对象
+     */
+    public User findByUserUid(String userUid) {
+        log.info("Finding user by external uid: {}", userUid);
+        User user = userMapper.findByUserUid(userUid);
         if (user == null) {
             throw new BusinessException(MessageConstants.USER_NOT_FOUND);
         }
@@ -65,8 +93,7 @@ public class UserServiceImpl implements UserServiceInterface {
      */
     public boolean existsByEmail(String email) {
         log.info("Checking if user exists by email: {}", email);
-        User user = userMapper.findByEmail(email);
-        return user != null;
+        return userMapper.existsByEmail(email);
     }
 
     /**
@@ -86,8 +113,13 @@ public class UserServiceImpl implements UserServiceInterface {
             throw new BusinessException(MessageConstants.USER_ALREADY_EXISTS);
         }
         
-        user.setCreatedAt(LocalDateTime.now());
-        user.setUpdatedAt(LocalDateTime.now());
+        LocalDateTime now = LocalDateTime.now();
+        if (user.getCreatedAt() == null) {
+            user.setCreatedAt(now);
+        }
+        user.setLastActiveAt(now);
+        user.setLastLoginAt(user.getLastLoginAt() == null ? now : user.getLastLoginAt());
+        user.setUpdatedAt(now);
         userMapper.insert(user);
     }
 
@@ -98,9 +130,33 @@ public class UserServiceImpl implements UserServiceInterface {
      */
     public void updateLoginInfo(User user) {
         log.info("Updating login info for user ID: {}", user.getId());
-        user.setLastLoginAt(LocalDateTime.now());
-        user.setUpdatedAt(LocalDateTime.now());
+        LocalDateTime now = LocalDateTime.now();
+        user.setLastLoginAt(now);
+        user.setLastActiveAt(now);
+        user.setUpdatedAt(now);
         userMapper.updateLoginInfo(user);
+    }
+
+    /**
+     * 更新用户活跃状态
+     *
+     * @param user 用户对象
+     */
+    public void updateLastActive(User user) {
+        log.info("Updating last active time for user ID: {}", user.getId());
+        LocalDateTime now = LocalDateTime.now();
+        user.setLastActiveAt(now);
+        user.setUpdatedAt(now);
+        userMapper.updateLastActive(user);
+    }
+
+    /**
+     * 更新用户基础信息
+     */
+    public void updateProfile(User user) {
+        log.info("Updating profile for user ID: {}", user.getId());
+        user.setUpdatedAt(LocalDateTime.now());
+        userMapper.updateProfile(user);
     }
 
     /**
