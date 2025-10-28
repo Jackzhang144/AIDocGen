@@ -107,6 +107,22 @@ src/
 4. **公共 API**：`PublicApiController` 按原逻辑校验 API Key（SHA-1）并提供语言/格式列表。
 5. **Webhook**：`WebhooksController` 更新用户订阅状态，保留 Stripe 事件兼容性。
 
+## 日志与观测
+
+- **入口日志**：`DocsController`、`TeamController`、`PublicApiController`、`PlaygroundController`、`FunctionsController`、`UserController` 等核心控制器会在 INFO 级别记录请求关键信息（如用户、语言、操作结果），并在 DEBUG 级别输出上下文尺寸、队列长度等细节。
+- **异步任务**：`DocJobService` 会跟踪任务受理、排队、执行、完成/失败的完整生命周期，并在配额校验、AI 生成、反馈决策等步骤输出调试信息，便于排查长耗时或异常。
+- **第三方回调**：Stripe Webhook 与 Typeform Webhook 会输出脱敏后的邮箱、客户 ID，未识别或缺失字段会以 WARN 级别提示。
+- **日志级别配置**：可在 `application.yml` 中自定义输出级别，例如：
+
+  ```yaml
+  logging:
+    level:
+      com.codecraft.documentationgenerator: INFO   # 生产环境推荐
+      com.codecraft.documentationgenerator.service.impl.DocJobService: DEBUG
+  ```
+
+  本地调试需要更详细信息时，可将对应包设置为 `DEBUG`；生产环境建议保持 INFO 并结合集中式日志采集（如 ELK、CloudWatch）。
+
 ## 如何迁移自 Node.js 版本
 
 1. 将原 Mongo/Redis 数据迁移至 MySQL，字段映射详见 `schema.sql`。
@@ -118,6 +134,12 @@ src/
 - **未安装 Maven**：请安装 `maven` 或引入 `mvnw` 包装器后再运行启动命令。
 - **OpenAI 调用失败**：确认环境变量 `OPENAI_API_KEY` 是否正确，或替换为自定义模型实现。
 - **Auth0/Stripe 可选**：如暂不需要第三方登录或计费，可不配置相关变量，接口会返回合理的兜底响应。
+- **日志过多**：可在 `application.yml` 中调低特定包的日志级别，或通过 `logging.pattern.*` 自定义输出模板。
+
+## 测试
+
+- 运行单元/集成测试：`mvn -B test`
+- 当前测试覆盖核心控制器与服务，包含 22 个 JUnit 5 用例；若新增功能，请同步补充测试并保证该命令通过。
 
 ## 相关文档
 

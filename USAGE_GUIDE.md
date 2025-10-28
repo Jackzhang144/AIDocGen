@@ -165,6 +165,20 @@ curl -X POST http://localhost:8080/playground/mints/synopsis \
 
 访问 `GET /` 可验证服务是否启动成功，期望输出 `🌳 Welcome to the Mintlify API`。
 
+### 5.3 查看运行日志
+
+- 本地运行时，Spring Boot 默认输出到控制台，可配合 `tail -f logs/spring.log`（若配置了文件输出）或 IDE 控制台实时查看。
+- 若需定位更细粒度问题，可在 `application.yml` 中将特定组件调整为 DEBUG：
+
+  ```yaml
+  logging:
+    level:
+      com.codecraft.documentationgenerator.controller.DocsController: DEBUG
+      com.codecraft.documentationgenerator.service.impl.DocJobService: DEBUG
+  ```
+
+- 公共 API、Webhook、文档生成等链路会自动记录受理人、操作结果与脱敏邮箱/API Key，出现 WARN 日志时可重点关注鉴权失败或必填字段缺失。
+
 ## 6. 常见问题
 
 | 问题 | 说明与解决方案 |

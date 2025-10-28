@@ -20,6 +20,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -56,7 +58,8 @@ class DocsControllerTest {
 
     @Test
     void writeDocWithoutSelection_shouldDeriveCode() throws Exception {
-        when(codeParsingService.getCode(anyString(), anyString(), any(), anyString())).thenReturn("derived");
+        when(codeParsingService.getCode(nullable(String.class), anyString(), any(), nullable(String.class)))
+                .thenReturn("derived");
         when(docJobService.submitJob(any())).thenReturn("job-2");
 
         mockMvc.perform(post("/docs/write/v3/no-selection")
@@ -65,7 +68,7 @@ class DocsControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is("job-2")));
 
-        verify(codeParsingService).getCode(anyString(), anyString(), any(), anyString());
+        verify(codeParsingService).getCode(nullable(String.class), eq("java"), any(), nullable(String.class));
     }
 
     @Test

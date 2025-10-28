@@ -372,9 +372,25 @@ Typeform Webhook。根据表单 `field.ref` 填写的字段生成 API Key 并持
 
 ---
 
+## 调试与日志
+
+- 所有公开接口会在 INFO 级别记录请求入口与关键业务结论（如受理的文档任务 ID、团队邀请进展、Stripe 事件类型等）。
+- 文档生成链路额外提供 DEBUG 级别详情：代码片段长度、队列规模、Synopsis 类型、AI 生成耗时、反馈提示决策。若需排查问题，可在 `application.yml` 中启用：
+
+  ```yaml
+  logging:
+    level:
+      com.codecraft.documentationgenerator.service.impl.DocJobService: DEBUG
+      com.codecraft.documentationgenerator.controller.DocsController: DEBUG
+  ```
+
+- 公共 API 与 Webhook 会脱敏输出邮箱/API Key，便于在生产环境中安全定位问题。
+- 建议结合 `spring.output.ansi.enabled=ALWAYS`（本地）或集中式日志平台，以获得更好的检索体验。
+
+---
+
 ## 限制与提示
 
 - 未登录用户每 30 天最多生成 60 次文档，超过后会收到 `requiresAuth` 响应。
 - 所有生成结果会持久化到 `docs` 表，包含语言、注释形式、耗时指标与反馈编号等。
 - 所有任务、反馈 ID 均为 UUID 字符串。
-

@@ -38,13 +38,16 @@ public class FunctionsController {
 
     @PostMapping("/typeform")
     public ResponseEntity<Void> typeformWebhook(@RequestBody Map<String, Object> payload) {
+        log.info("Received Typeform webhook payload");
         Map<String, Object> formResponse = (Map<String, Object>) payload.get("form_response");
         if (formResponse == null) {
+            log.warn("Typeform webhook missing form_response section");
             return ResponseEntity.badRequest().build();
         }
 
         List<Map<String, Object>> answers = (List<Map<String, Object>>) formResponse.get("answers");
         if (answers == null) {
+            log.warn("Typeform webhook missing answers section");
             return ResponseEntity.badRequest().build();
         }
 
@@ -54,16 +57,19 @@ public class FunctionsController {
         String purpose = extractAnswer(answers, "d6b6724b54f245f8");
 
         if (email == null || firstName == null || lastName == null) {
+            log.warn("Typeform webhook missing required identity fields (email={})", email);
             return ResponseEntity.badRequest().build();
         }
 
         createApiKey(firstName, lastName, email, purpose);
+        log.info("Typeform webhook issued API key for {} {} ({})", firstName, lastName, maskEmail(email));
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/api")
     public ResponseEntity<Map<String, String>> createApiKey(@RequestBody AdminApiRequest request) {
         if (adminAccessKey == null || adminAccessKey.isEmpty() || !adminAccessKey.equals(request.getAccessKey())) {
+            log.warn("Admin API key creation denied: invalid access key");
             throw new BusinessException("Invalid access key");
         }
 
@@ -73,6 +79,8 @@ public class FunctionsController {
 
         String apiKey = UUID.randomUUID().toString();
         persistApiKey(request.getFirstName(), request.getLastName(), request.getEmail(), null, apiKey);
+        log.info("Admin generated API key for {} {} ({})", request.getFirstName(), request.getLastName(),
+                maskEmail(request.getEmail()));
         return ResponseEntity.ok(Map.of("key", apiKey));
     }
 
@@ -89,6 +97,7 @@ public class FunctionsController {
         entity.setPurpose(purpose);
         entity.setHashedKey(hashKey(apiKey));
         apiKeyService.createApiKey(entity);
+        log.debug("Persisted API key metadata for {} {} ({})", firstName, lastName, maskEmail(email));
     }
 
     private String hashKey(String key) {
@@ -103,6 +112,17 @@ public class FunctionsController {
         } catch (NoSuchAlgorithmException e) {
             throw new IllegalStateException("SHA-1 algorithm not available", e);
         }
+    }
+
+    private String maskEmail(String email) {
+        if (email == null || email.isEmpty()) {
+            return "<empty>";
+        }
+        int atIndex = email.indexOf('@');
+        if (atIndex <= 1) {
+            return "***" + (atIndex == -1 ? "" : email.substring(atIndex));
+        }
+        return email.substring(0, Math.min(2, atIndex)) + "***" + email.substring(atIndex);
     }
 
     private String extractAnswer(List<Map<String, Object>> answers, String ref) {

@@ -80,9 +80,18 @@ public class DocJobService {
     public String submitJob(GenerateDocRequest request) {
         validateAuthenticationRequirement(request);
 
+        log.info("Accepted doc job submission for user {} (language={}, source={}, selection={})",
+                request.getUserId(), request.getLanguageId(), request.getSource(), request.getIsSelection());
+        if (log.isDebugEnabled()) {
+            int snippetLength = request.getCode() == null ? 0 : request.getCode().length();
+            log.debug("Current queued jobs: {}, snippet length: {}", jobs.size(), snippetLength);
+        }
+
         String jobId = UUID.randomUUID().toString();
         DocJob job = new DocJob(jobId);
         jobs.put(jobId, job);
+
+        log.debug("Job {} enqueued; queue size now {}", jobId, jobs.size());
 
         executorService.submit(() -> processJob(job, request));
         return jobId;
@@ -100,14 +109,18 @@ public class DocJobService {
 
     private void processJob(DocJob job, GenerateDocRequest request) {
         job.markRunning();
+        log.info("Job {} started processing for user {}", job.getId(), request.getUserId());
         try {
             DocJobResult result = generateDocumentation(request);
             job.markCompleted(result);
+            log.info("Job {} completed successfully (doc length={})", job.getId(),
+                    result.getDocstring() == null ? 0 : result.getDocstring().length());
         } catch (RequiresAuthenticationException authException) {
             job.markFailed(authException.getMessage());
+            log.warn("Job {} blocked: {}", job.getId(), authException.getMessage());
             throw authException;
         } catch (Exception ex) {
-            log.error("Failed to generate documentation", ex);
+            log.error("Job {} failed during documentation generation", job.getId(), ex);
             job.markFailed(Optional.ofNullable(ex.getMessage()).orElse("Internal error"));
         }
     }
@@ -115,9 +128,13 @@ public class DocJobService {
     private DocJobResult generateDocumentation(GenerateDocRequest request) {
         String originalLanguageId = Optional.ofNullable(request.getLanguageId()).orElse("unknown");
         String resolvedLanguageId = LanguageHelper.resolveLanguageId(request.getFileName(), originalLanguageId);
+        log.debug("Generating documentation for user {} (originalLanguage={}, resolvedLanguage={})",
+                request.getUserId(), originalLanguageId, resolvedLanguageId);
 
         String effectiveContext = Optional.ofNullable(request.getContext()).orElse(request.getCode());
         Synopsis synopsis = codeParsingService.getSynopsis(request.getCode(), resolvedLanguageId, effectiveContext);
+        log.debug("Synopsis for user {} resolved as kind={} with context length={}",
+                request.getUserId(), synopsis.getKind(), effectiveContext == null ? 0 : effectiveContext.length());
 
         long startTime = System.nanoTime();
         long aiStart = System.nanoTime();
@@ -138,10 +155,14 @@ public class DocJobService {
         long endTime = System.nanoTime();
         persistDoc(request, resolvedLanguageId, synopsis, formattedDocstring, feedbackId,
                 Duration.ofNanos(aiEnd - aiStart), Duration.ofNanos(endTime - startTime));
+        log.debug("Doc persisted for user {} (feedbackId={}, persistedLanguage={})",
+                request.getUserId(), feedbackId, resolvedLanguageId);
 
         ShowFeedbackStatus feedbackStatus = evaluateFeedbackVisibility(request.getUserId(), result);
         result.setShouldShowFeedback(feedbackStatus.isShouldShowFeedback());
         result.setShouldShowShare(feedbackStatus.isShouldShowShare());
+        log.debug("Feedback prompt decision for user {} => showFeedback={}, showShare={}",
+                request.getUserId(), feedbackStatus.isShouldShowFeedback(), feedbackStatus.isShouldShowShare());
 
         touchUserLastActive(request.getUserId());
 
@@ -150,6 +171,7 @@ public class DocJobService {
 
     private void validateAuthenticationRequirement(GenerateDocRequest request) {
         if (request.getUserId() == null || request.getUserId().isEmpty()) {
+            log.warn("Rejecting doc job: missing userId");
             throw new RequiresAuthenticationException(
                     "Please update the extension to continue",
                     "🔐 Sign in",
@@ -159,6 +181,7 @@ public class DocJobService {
 
         String source = Optional.ofNullable(request.getSource()).orElse("");
         if ("intellij".equalsIgnoreCase(source) || "web".equalsIgnoreCase(source)) {
+            log.debug("Skipping quota check for user {} due to source {}", request.getUserId(), source);
             return;
         }
 
@@ -167,13 +190,20 @@ public class DocJobService {
         User identifiedUser = userService.findByEmailOrNull(request.getEmail());
         boolean belongsToTeam = request.getEmail() != null && teamService.findByEmail(request.getEmail()) != null;
 
+        log.debug("Quota snapshot for user {} => count={}, identifiedUser={}, belongsToTeam={}",
+                request.getUserId(), docsCount, identifiedUser != null, belongsToTeam);
+
         if (identifiedUser == null && !belongsToTeam && docsCount > MAX_DOCS_FOR_AUTH) {
+            log.info("Quota exceeded for user {}: {} docs in {} days", request.getUserId(),
+                    docsCount, DAYS_PER_QUOTA_PERIOD);
             throw new RequiresAuthenticationException(
                     "Please sign in to continue. By doing so, you agree to Mintlify's terms and conditions",
                     "🔐 Sign in",
                     "Please update the extension to continue"
             );
         }
+
+        log.debug("Quota check passed for user {}", request.getUserId());
     }
 
     private String generateDocstringBySynopsis(String code, Synopsis synopsis, String languageId) {
@@ -272,8 +302,10 @@ public class DocJobService {
         try {
             User user = userService.findByUserUid(userUid);
             userService.updateLastActive(user);
+            log.debug("Updated last active timestamp for user {}", userUid);
         } catch (Exception ignore) {
             // ignore if user not found
+            log.debug("Skipping last active update for user {}: {}", userUid, ignore.getMessage());
         }
     }
 

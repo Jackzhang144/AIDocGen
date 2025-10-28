@@ -24,7 +24,10 @@ public class ProgressController {
 
     @PostMapping
     public ResponseEntity<ProgressResponse> getProgress(@RequestBody ProgressRequest request) {
+        log.info("Progress analysis requested for file {} (language={}, indicators={})",
+                request.getFileName(), request.getLanguageId(), request.getTypes());
         ProgressResponse response = calculateProgress(request.getFile(), request.getTypes());
+        log.debug("Progress response total={} for file {}", response.getTotal(), request.getFileName());
         return ResponseEntity.ok(response);
     }
 

@@ -29,26 +29,32 @@ public class WebhooksController {
 
     @PostMapping("/stripe")
     public ResponseEntity<Void> handleStripe(@RequestBody StripeEvent event) {
+        log.info("Received Stripe webhook event: {}", event.getType());
         if (event.getData() == null || event.getData().getObject() == null) {
+            log.warn("Stripe webhook missing payload body");
             return ResponseEntity.ok().build();
         }
 
         String email = event.getData().getObject().getCustomerEmail();
         String customerId = event.getData().getObject().getCustomer();
         if (email == null) {
+            log.warn("Stripe webhook missing customer email for event {}", event.getType());
             return ResponseEntity.ok().build();
         }
 
         switch (event.getType()) {
             case "checkout.session.completed":
             case "invoice.paid":
+                log.info("Activating premium plan for {} (customerId={})", maskEmail(email), customerId);
                 updatePlan(email, customerId, "premium");
                 break;
             case "customer.subscription.deleted":
             case "invoice.payment_failed":
+                log.info("Deactivating premium plan for {}", maskEmail(email));
                 updatePlan(email, null, null);
                 break;
             default:
+                log.debug("Ignoring unsupported Stripe event type: {}", event.getType());
                 break;
         }
 
@@ -65,6 +71,18 @@ public class WebhooksController {
         user.setStripeCustomerId(customerId);
         user.setUpdatedAt(LocalDateTime.now());
         userService.updateSubscriptionInfo(user);
+        log.debug("Updated subscription for {} => plan={}, customerId={}", maskEmail(email), plan, customerId);
+    }
+
+    private String maskEmail(String email) {
+        if (email == null || email.isEmpty()) {
+            return "<empty>";
+        }
+        int atIndex = email.indexOf('@');
+        if (atIndex <= 1) {
+            return "***" + (atIndex == -1 ? "" : email.substring(atIndex));
+        }
+        return email.substring(0, Math.min(2, atIndex)) + "***" + email.substring(atIndex);
     }
 
     @Data

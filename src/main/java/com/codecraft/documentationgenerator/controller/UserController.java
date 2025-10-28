@@ -50,6 +50,7 @@ public class UserController {
 
     @PostMapping("/code")
     public ResponseEntity<UserStatusResponse> exchangeCode(@RequestBody AuthCodeRequest request) {
+        log.info("Received Auth0 code exchange for userUid={} (scheme={})", request.getUserId(), request.getUriScheme());
         ensureAuth0Configured();
 
         TokenResponse tokens = fetchTokensFromAuth0(request);
@@ -61,6 +62,8 @@ public class UserController {
 
         User user = upsertUser(request.getUserId(), authInfo, tokens.getRefreshToken());
         boolean isUpgraded = "premium".equalsIgnoreCase(user.getPlan());
+
+        log.info("Auth0 exchange completed for {} (plan={})", maskEmail(authInfo.getEmail()), user.getPlan());
 
         UserStatusResponse response = new UserStatusResponse();
         response.setEmail(authInfo.getEmail());
@@ -90,23 +93,28 @@ public class UserController {
     public ResponseEntity<Map<String, String>> getStatus(@RequestBody(required = false) Map<String, String> body) {
         String email = body == null ? null : body.get("email");
         if (email == null || email.isEmpty()) {
+            log.info("Status check with missing email; returning unauthenticated");
             return ResponseEntity.ok(Map.of("status", "unauthenticated"));
         }
 
         User user = userService.findByEmailOrNull(email);
         if (user == null) {
+            log.info("Status check for {} => unaccounted", maskEmail(email));
             return ResponseEntity.ok(Map.of("status", "unaccounted"));
         }
 
         if (user.getPlan() != null && "premium".equalsIgnoreCase(user.getPlan())) {
+            log.info("Status check for {} => team (premium)", maskEmail(email));
             return ResponseEntity.ok(Map.of("status", "team"));
         }
 
         Team team = teamService.findByMember(email);
         if (team != null) {
+            log.info("Status check for {} => member of team {}", maskEmail(email), team.getAdmin());
             return ResponseEntity.ok(Map.of("status", "member"));
         }
 
+        log.info("Status check for {} => community", maskEmail(email));
         return ResponseEntity.ok(Map.of("status", "community"));
     }
 
@@ -137,6 +145,7 @@ public class UserController {
         if (response == null || response.getAccessToken() == null) {
             throw new BusinessException("Failed to exchange code for tokens");
         }
+        log.debug("Received token response from Auth0 for scheme {}", redirectScheme);
         return response;
     }
 
@@ -152,6 +161,7 @@ public class UserController {
         if (!response.hasBody()) {
             throw new BusinessException("Failed to fetch user info");
         }
+        log.debug("Fetched user info from Auth0 with status {}", response.getStatusCode());
         return response.getBody();
     }
 
@@ -168,6 +178,7 @@ public class UserController {
             user.setRefreshToken(refreshToken);
             user.setCreatedAt(LocalDateTime.now());
             userService.createUser(user);
+            log.info("Created new user record for {} via Auth0", maskEmail(authInfo.getEmail()));
             return user;
         }
 
@@ -178,6 +189,7 @@ public class UserController {
         existing.setFamilyName(authInfo.getFamilyName());
         existing.setPicture(authInfo.getPicture());
         userService.updateProfile(existing);
+        log.debug("Updated existing user profile for {} via Auth0", maskEmail(authInfo.getEmail()));
         return existing;
     }
 
@@ -185,6 +197,17 @@ public class UserController {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         return headers;
+    }
+
+    private String maskEmail(String email) {
+        if (email == null || email.isEmpty()) {
+            return "<empty>";
+        }
+        int atIndex = email.indexOf('@');
+        if (atIndex <= 1) {
+            return "***" + (atIndex == -1 ? "" : email.substring(atIndex));
+        }
+        return email.substring(0, Math.min(2, atIndex)) + "***" + email.substring(atIndex);
     }
 
     @Data

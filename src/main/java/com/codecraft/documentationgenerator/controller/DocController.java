@@ -46,7 +46,7 @@ public class DocController {
      */
     @RequireLogin
     @GetMapping("/user/{userId}")
-    public List<Doc> getDocsByUserId(@PathVariable Long userId) {
+    public List<Doc> getDocsByUserId(@PathVariable String userId) {
         log.info("Fetching documents for user ID: {}", userId);
         return docService.findByUserId(userId);
     }

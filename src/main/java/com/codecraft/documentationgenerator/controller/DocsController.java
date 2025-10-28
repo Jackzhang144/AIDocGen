@@ -41,34 +41,55 @@ public class DocsController {
 
     @PostMapping("/write/v3")
     public ResponseEntity<Map<String, String>> writeDoc(@RequestBody GenerateDocRequest request) {
+        log.info("Received doc generation request for user {} (language={}, selection=true)",
+                request.getUserId(), request.getLanguageId());
+        if (log.isDebugEnabled()) {
+            int codeLength = request.getCode() == null ? 0 : request.getCode().length();
+            log.debug("Selected code snippet length: {}", codeLength);
+        }
         validateCodePresence(request);
         request.setIsSelection(true);
         String jobId = docJobService.submitJob(request);
+        log.info("Doc generation job {} submitted for user {}", jobId, request.getUserId());
         return ResponseEntity.ok(Map.of("id", jobId));
     }
 
     @PostMapping("/write/v3/no-selection")
     public ResponseEntity<Map<String, String>> writeDocWithoutSelection(@RequestBody GenerateDocRequest request) {
+        log.info("Received doc generation request without selection for user {} (language={})",
+                request.getUserId(), request.getLanguageId());
         String derivedCode = codeParsingService.getCode(
                 request.getContext(),
                 request.getLanguageId(),
                 request.getLocation(),
                 request.getLine());
         request.setCode(derivedCode);
+        if (log.isDebugEnabled()) {
+            int contextLength = request.getContext() == null ? 0 : request.getContext().length();
+            log.debug("Derived code length: {}, context length: {}, location: {}, line preview: {}",
+                    derivedCode == null ? 0 : derivedCode.length(),
+                    contextLength,
+                    request.getLocation(),
+                    request.getLine());
+        }
         validateCodePresence(request);
         request.setIsSelection(false);
         String jobId = docJobService.submitJob(request);
+        log.info("Doc generation job {} submitted (derived code) for user {}", jobId, request.getUserId());
         return ResponseEntity.ok(Map.of("id", jobId));
     }
 
     @GetMapping("/worker/{id}")
     public ResponseEntity<?> getWorkerStatus(@PathVariable String id) {
+        log.debug("Fetching worker status for job {}", id);
         Optional<DocJob> jobOptional = docJobService.getJob(id);
         if (jobOptional.isEmpty()) {
+            log.warn("Requested job {} not found", id);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
 
         DocJob job = jobOptional.get();
+        log.debug("Job {} current state: {}", id, job.getState());
         Map<String, Object> response = new HashMap<>();
         response.put("id", job.getId());
         response.put("state", mapState(job.getState()));

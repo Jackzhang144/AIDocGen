@@ -38,22 +38,28 @@ public class PlaygroundController {
 
     @PostMapping("/mints/{mode}")
     public ResponseEntity<?> inspect(@PathVariable String mode, @RequestBody PlaygroundRequest request) {
+        log.info("Playground inspection request for mode={} (language={})", mode, request.getLanguageId());
         validateAccessKey(request.getAccessKey());
 
         if ("ast".equalsIgnoreCase(mode)) {
+            log.debug("Generating naive AST for payload length {}", request.getCode() == null ? 0 : request.getCode().length());
             return ResponseEntity.ok(Map.of("ast", buildNaiveAst(request.getCode())));
         } else if ("synopsis".equalsIgnoreCase(mode)) {
             Synopsis synopsis = codeParsingService.getSynopsis(request.getCode(), request.getLanguageId(), request.getContext());
+            log.debug("Synopsis generated for language {}: kind={}", request.getLanguageId(), synopsis.getKind());
             return ResponseEntity.ok(Map.of("synopsis", synopsis));
         }
 
+        log.warn("Unsupported playground mode requested: {}", mode);
         return ResponseEntity.ok().build();
     }
 
     private void validateAccessKey(String accessKey) {
         if (adminAccessKey == null || adminAccessKey.isEmpty() || !adminAccessKey.equals(accessKey)) {
+            log.warn("Playground access denied due to invalid access key");
             throw new BusinessException("Invalid access key");
         }
+        log.debug("Playground access granted");
     }
 
     private Map<String, Object> buildNaiveAst(String code) {

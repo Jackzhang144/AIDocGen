@@ -117,7 +117,7 @@ class DocJobServiceTest {
     }
 
     @Test
-    void submitJob_shouldSkipQuotaWhenBelongsToTeam() {
+    void submitJob_shouldSkipQuotaWhenBelongsToTeam() throws InterruptedException {
         GenerateDocRequest request = buildRequest(false);
         when(docService.countDocsByUserSince(anyString(), any())).thenReturn(120);
         when(userService.findByEmailOrNull(anyString())).thenReturn(null);
@@ -133,7 +133,10 @@ class DocJobServiceTest {
         when(docService.findRecentDocs(anyString(), anyInt())).thenReturn(Collections.emptyList());
         when(userService.findByUserUid(anyString())).thenReturn(new User());
 
-        assertThatCode(() -> docJobService.submitJob(request)).doesNotThrowAnyException();
+        String jobId = docJobService.submitJob(request);
+        DocJob job = awaitJobCompletion(jobId);
+
+        assertThat(job.getState()).isEqualTo(JobState.COMPLETED);
     }
 
     private GenerateDocRequest buildRequest(boolean commented) {

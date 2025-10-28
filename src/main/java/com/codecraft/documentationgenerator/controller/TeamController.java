@@ -31,8 +31,10 @@ public class TeamController {
 
     @GetMapping
     public ResponseEntity<TeamResponse> getTeam(@RequestParam String email) {
+        log.info("Fetching team overview for {}", email);
         Team team = teamService.findByEmail(email);
         if (team == null) {
+            log.debug("No team found for {}; returning empty response", email);
             TeamResponse response = new TeamResponse();
             response.setAdmin(email);
             response.setMembers(List.of());
@@ -50,11 +52,14 @@ public class TeamController {
         TeamResponse response = new TeamResponse();
         response.setAdmin(team.getAdmin());
         response.setMembers(members);
+        log.debug("Team {} has {} members", team.getAdmin(), members.size());
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/invite")
     public ResponseEntity<Void> inviteMember(@RequestBody TeamInviteRequest request) {
+        log.info("Invite request from {} to {} (createTeam={})",
+                request.getFromEmail(), request.getToEmail(), request.getShouldCreateTeam());
         validateInviteRequest(request);
 
         if (Boolean.TRUE.equals(request.getShouldCreateTeam())) {
@@ -64,6 +69,7 @@ public class TeamController {
             }
 
             teamService.inviteMember(request.getFromEmail(), request.getToEmail());
+            log.info("Invite processed successfully from {} to {}", request.getFromEmail(), request.getToEmail());
         } else if (request.getUserId() != null) {
             log.info("Invite attempt without premium plan from {}", request.getFromEmail());
         }
@@ -77,11 +83,13 @@ public class TeamController {
             throw new BusinessException("Missing email input");
         }
 
+        log.info("Revoking invite for {} from team admin {}", request.getToEmail(), request.getFromEmail());
         teamService.removeMember(request.getFromEmail(), request.getToEmail());
         return ResponseEntity.ok().build();
     }
 
     private void validateInviteRequest(TeamInviteRequest request) {
+        log.debug("Validating invite request: from={} to={}", request.getFromEmail(), request.getToEmail());
         if (request.getFromEmail() == null || request.getToEmail() == null || request.getToEmail().isEmpty()) {
             throw new BusinessException("Missing email input");
         }
