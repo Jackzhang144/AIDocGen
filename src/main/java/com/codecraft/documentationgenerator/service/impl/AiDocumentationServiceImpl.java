@@ -2,9 +2,8 @@ package com.codecraft.documentationgenerator.service.impl;
 
 import com.codecraft.documentationgenerator.model.Synopsis;
 import com.codecraft.documentationgenerator.service.AiDocumentationServiceInterface;
+import com.codecraft.documentationgenerator.service.ai.AiModelClient;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.stereotype.Service;
 
 /**
@@ -19,15 +18,15 @@ import org.springframework.stereotype.Service;
 @Service
 public class AiDocumentationServiceImpl implements AiDocumentationServiceInterface {
 
-    private final ChatClient chatClient;
+    private final AiModelClient aiModelClient;
 
     /**
      * 构造函数
      *
-     * @param chatClient AI聊天客户端
+     * @param aiModelClient AI模型客户端
      */
-    public AiDocumentationServiceImpl(ChatClient chatClient) {
-        this.chatClient = chatClient;
+    public AiDocumentationServiceImpl(AiModelClient aiModelClient) {
+        this.aiModelClient = aiModelClient;
     }
 
     /**
@@ -45,10 +44,7 @@ public class AiDocumentationServiceImpl implements AiDocumentationServiceInterfa
         String promptText = String.format("%s\n%s\n###\nHere's a one sentence summary of the above function: ",
                 getLanguageCommentFormat(languageId), code);
 
-        Prompt prompt = new Prompt(promptText);
-
-        // 调用AI生成文档
-        String result = chatClient.prompt(prompt).call().content();
+        String result = aiModelClient.generateText(promptText);
         log.debug("Function docstring generated successfully, length: {}", result.length());
         return result;
     }
@@ -66,9 +62,7 @@ public class AiDocumentationServiceImpl implements AiDocumentationServiceInterfa
         String promptText = String.format("%s\n%s\n###\nHere's a one sentence summary of the above class: ",
                 getLanguageCommentFormat(languageId), code);
 
-        Prompt prompt = new Prompt(promptText);
-
-        String result = chatClient.prompt(prompt).call().content();
+        String result = aiModelClient.generateText(promptText);
         log.debug("Class docstring generated successfully, length: {}", result.length());
         return result;
     }
@@ -86,9 +80,7 @@ public class AiDocumentationServiceImpl implements AiDocumentationServiceInterfa
         String promptText = String.format("%s\n%s\n###\nQuestion: What is the above code doing?\nAnswer: ",
                 getLanguageName(languageId), code);
 
-        Prompt prompt = new Prompt(promptText);
-
-        String result = chatClient.prompt(prompt).call().content();
+        String result = aiModelClient.generateText(promptText);
         log.debug("Simple explanation generated successfully, length: {}", result.length());
         return result;
     }

@@ -43,6 +43,18 @@ knife4j:
     enable-swagger-models: true
     enable-document-manage: true
   group-configs:
-    - group: default
-      paths-to-match: /**
-      packages-to-scan: com.codecraft.documentationgenerator.controller
+    group: default
+    paths-to-match: /**
+    packages-to-scan: com.codecraft.documentationgenerator.controller
+
+docgen:
+  ai:
+    # 可选值：openai、deepseek
+    provider: openai
+    openai-model: gpt-3.5-turbo
+    deepseek:
+      base-url: https://api.deepseek.com
+      model: deepseek-chat
+      api-key: ${DEEPSEEK_API_KEY:}
+      timeout: 60s
+      temperature: 0.2

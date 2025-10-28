@@ -37,6 +37,7 @@
    - `spring.datasource.*`：MySQL 连接信息
    - `spring.ai.openai.api-key`：可选，启用 AI 能力时填写
    - `jwt.secret`：仍保留 JWT 鉴权所需密钥
+   - `docgen.ai.*`：选择 AI 供应商（OpenAI / DeepSeek）以及对应模型配置
 4. **关键环境变量（按需启用）**
 
    | 变量名 | 用途 |
@@ -45,6 +46,24 @@
    | `AUTH0_ISSUER_BASE_URL` / `AUTH0_CLIENT_ID` / `AUTH0_CLIENT_SECRET` | `/user/code` Auth0 授权兑换 |
    | `STRIPE_SECRET_KEY`（可选） | Stripe SDK 使用时需要；当前控制器仅读取 webhook 数据 |
    | `OPENAI_API_KEY` | Spring AI 调用 OpenAI 时使用 |
+   | `DEEPSEEK_API_KEY`（可选） | 切换至 DeepSeek 模型时的 API Key |
+
+### 切换至 DeepSeek
+
+`docgen.ai.provider` 默认为 `openai`。如需使用 DeepSeek：
+
+1. 在 `application.yml` 中设置：
+   ```yaml
+   docgen:
+     ai:
+       provider: deepseek
+       deepseek:
+         model: deepseek-chat # 或 deepseek-coder
+         api-key: ${DEEPSEEK_API_KEY}
+   ```
+2. 配置环境变量 `DEEPSEEK_API_KEY`（或直接在配置文件中填写密钥）。
+
+其余路由与调用方式保持不变。
 
 ## 启动项目
 
