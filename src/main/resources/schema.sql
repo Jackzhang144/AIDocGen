@@ -1,70 +1,57 @@
-CREATE DATABASE IF NOT EXISTS doc_generator;
-USE doc_generator;
-
--- 用户表
-CREATE TABLE IF NOT EXISTS users
-(
-    id                 BIGINT AUTO_INCREMENT PRIMARY KEY,
-    user_uid           VARCHAR(255) UNIQUE,
-    email              VARCHAR(255) NOT NULL UNIQUE,
-    name               VARCHAR(255),
-    given_name         VARCHAR(255),
-    family_name        VARCHAR(255),
-    picture            VARCHAR(1024),
-    password           VARCHAR(255),
-    created_at         DATETIME DEFAULT CURRENT_TIMESTAMP,
-    last_active_at     DATETIME,
-    last_login_at      DATETIME,
-    refresh_token      TEXT,
-    plan               VARCHAR(50),
-    stripe_customer_id VARCHAR(255),
-    updated_at         DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+CREATE TABLE IF NOT EXISTS docs (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    timestamp DATETIME NULL,
+    user_id VARCHAR(64),
+    email VARCHAR(255),
+    output MEDIUMTEXT,
+    prompt MEDIUMTEXT,
+    language VARCHAR(64),
+    time_to_generate BIGINT,
+    time_to_call BIGINT,
+    source VARCHAR(64),
+    feedback_id VARCHAR(64),
+    feedback INT,
+    is_preview TINYINT(1),
+    has_accepted_preview TINYINT(1),
+    is_explained TINYINT(1),
+    doc_format VARCHAR(32),
+    comment_format VARCHAR(32),
+    kind VARCHAR(64),
+    is_selection TINYINT(1),
+    prompt_id VARCHAR(64),
+    actual_language VARCHAR(64),
+    model_provider VARCHAR(64),
+    latency_ms BIGINT
 );
 
--- 文档表
-CREATE TABLE IF NOT EXISTS docs
-(
-    id                   BIGINT AUTO_INCREMENT PRIMARY KEY,
-    user_id              VARCHAR(255),
-    email                VARCHAR(255),
-    output               TEXT,
-    prompt               TEXT NOT NULL,
-    language             VARCHAR(50),
-    time_to_generate     INT,
-    time_to_call         INT,
-    source               VARCHAR(100),
-    feedback_id          VARCHAR(255),
-    feedback             INT,
-    is_preview           BOOLEAN  DEFAULT FALSE,
-    has_accepted_preview BOOLEAN  DEFAULT FALSE,
-    is_explained         BOOLEAN  DEFAULT FALSE,
-    doc_format           VARCHAR(50),
-    comment_format       VARCHAR(50),
-    kind                 VARCHAR(50),
-    is_selection         BOOLEAN  DEFAULT TRUE,
-    prompt_id            VARCHAR(255),
-    actual_language      VARCHAR(50),
-    timestamp            DATETIME DEFAULT CURRENT_TIMESTAMP,
-    INDEX idx_docs_user_id (user_id)
+CREATE TABLE IF NOT EXISTS api_keys (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    hashed_key VARCHAR(128) NOT NULL UNIQUE,
+    email VARCHAR(255) NOT NULL,
+    last_name VARCHAR(255) NOT NULL,
+    first_name VARCHAR(255) NOT NULL,
+    purpose VARCHAR(255),
+    created_at DATETIME NULL
 );
 
--- API密钥表
-CREATE TABLE IF NOT EXISTS api_keys
-(
-    id         BIGINT AUTO_INCREMENT PRIMARY KEY,
-    hashed_key VARCHAR(255) NOT NULL UNIQUE,
-    first_name VARCHAR(255),
-    last_name  VARCHAR(255),
-    email      VARCHAR(255),
-    purpose    VARCHAR(255),
+CREATE TABLE IF NOT EXISTS users (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(64) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    email VARCHAR(255),
+    role VARCHAR(32) NOT NULL,
+    api_quota INT DEFAULT 100,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
--- 团队表
-CREATE TABLE IF NOT EXISTS teams
-(
-    id      BIGINT AUTO_INCREMENT PRIMARY KEY,
-    admin   VARCHAR(255) NOT NULL,
-    members JSON NOT NULL DEFAULT (JSON_ARRAY()),
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+CREATE TABLE IF NOT EXISTS doc_jobs (
+    job_id VARCHAR(64) PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    payload LONGTEXT NOT NULL,
+    state VARCHAR(32) NOT NULL,
+    reason TEXT,
+    result LONGTEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_doc_jobs_user FOREIGN KEY (user_id) REFERENCES users(id)
 );

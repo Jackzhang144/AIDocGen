@@ -1,60 +1,100 @@
 spring:
   application:
-    name: DocumentationGenerator
+    name: project-documentation-generator
   datasource:
-    url: jdbc:mysql://localhost:3306/doc_generator?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=GMT%2B8&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://localhost:3306/aiddoc?useSSL=false&serverTimezone=UTC
     username: root
-    password: ""
+    password:
     driver-class-name: com.mysql.cj.jdbc.Driver
-  ai:
-    openai:
-      api-key: ${OPENAI_API_KEY}
-      chat:
-        options:
-          model: gpt-3.5-turbo
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      connection-timeout: 30000
+  cache:
+    type: caffeine
+  jackson:
+    default-property-inclusion: non_null
+  data:
+    redis:
+      host: 127.0.0.1
+      port: 6379
+      password:
+      database: 0
+      timeout: 3000
 
-mybatis:
+mybatis-plus:
   configuration:
     map-underscore-to-camel-case: true
+    default-executor-type: simple
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
-  mapper-locations: classpath:mapper/*.xml
+  global-config:
+    banner: false
+    db-config:
+      id-type: auto
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
 
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info
-  endpoint:
-    health:
-      show-details: always
+caffeine:
+  spec: maximumSize=1000,expireAfterAccess=10m
 
-# JWT配置
-jwt:
-  secret: mySecretKeyForDocumentationGeneratorWhichIsVerySecureAndLongEnough
+server:
+  port: 8080
+  servlet:
+    context-path: /api
 
-# Knife4j配置
 knife4j:
   enable: true
   production: false
-  basic:
-    enable: false
   setting:
-    language: zh_cn
-    enable-swagger-models: true
-    enable-document-manage: true
-  group-configs:
-    group: default
-    paths-to-match: /**
-    packages-to-scan: com.codecraft.documentationgenerator.controller
+    language: zh-CN
 
-docgen:
-  ai:
-    # 可选值：openai、deepseek
-    provider: openai
-    openai-model: gpt-3.5-turbo
+logging:
+  level:
+    root: info
+    com.codecraft.aidoc: info
+
+ai:
+  gateway:
+    enabled: true
+    provider: deepseek
+    openai:
+      base-url: https://api.openai.com/v1
+      api-key:
+      model: gpt-4o-mini
+      max-output-tokens: 512
+      temperature: 0.15
+      timeout-ms: 20000
     deepseek:
-      base-url: https://api.deepseek.com
+      base-url: https://api.deepseek.com/v1
+      api-key: sk-d46f6311bacc4dbaa79766f9ca16b78f
       model: deepseek-chat
-      api-key: ${DEEPSEEK_API_KEY:}
-      timeout: 60s
+      max-output-tokens: 512
       temperature: 0.2
+      timeout-ms: 20000
+
+web:
+  cors:
+    allowed-origins:
+      - http://localhost:5173
+    allowed-methods:
+      - GET
+      - POST
+      - PUT
+      - DELETE
+      - OPTIONS
+    allowed-headers:
+      - "*"
+    allow-credentials: false
+    max-age: 3600
+
+security:
+  jwt:
+    secret: change-me-in-prod
+    expiration-ms: 86400000
+  admin:
+    username: admin
+    password: admin
+    email: admin@example.com
