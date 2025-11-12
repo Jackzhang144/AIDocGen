@@ -23,7 +23,7 @@
         <mybatis-plus.version>3.5.5</mybatis-plus.version>
         <mysql.version>8.4.0</mysql.version>
         <mybatis-typehandlers-jsr310.version>1.0.2</mybatis-typehandlers-jsr310.version>
-        <lombok.version>1.18.36</lombok.version>
+        <lombok.version>1.18.42</lombok.version>
     </properties>
 
     <dependencies>
