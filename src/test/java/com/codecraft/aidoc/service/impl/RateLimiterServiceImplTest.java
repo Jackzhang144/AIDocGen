@@ -21,4 +21,12 @@ class RateLimiterServiceImplTest {
         }
         assertFalse(rateLimiter.tryConsume(key, 5, 60));
     }
+
+    @Test
+    void resetsAfterWindowExpires() throws InterruptedException {
+        String key = "window-key";
+        assertTrue(rateLimiter.tryConsume(key, 1, 1));
+        Thread.sleep(1100);
+        assertTrue(rateLimiter.tryConsume(key, 1, 1));
+    }
 }

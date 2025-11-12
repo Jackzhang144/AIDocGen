@@ -21,10 +21,10 @@ public class AdminAccountInitializer {
     @PostConstruct
     public void ensureAdminAccount() {
         if (!StringUtils.hasText(adminProperties.getUsername()) || !StringUtils.hasText(adminProperties.getPassword())) {
-            log.warn("[Aidoc] 未配置 security.admin.username/password，无法自动创建管理员账号");
+            log.warn("[AIDocGen] 未配置 security.admin.username/password，无法自动创建管理员账号");
             return;
         }
         userService.upsertAdmin(adminProperties.getUsername(), adminProperties.getEmail(), adminProperties.getPassword());
-        log.info("[Aidoc] 管理员账号 {} 已确保存在", adminProperties.getUsername());
+        log.info("[AIDocGen] 管理员账号 {} 已确保存在", adminProperties.getUsername());
     }
 }

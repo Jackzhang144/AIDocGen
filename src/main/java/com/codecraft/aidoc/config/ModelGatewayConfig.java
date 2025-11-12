@@ -24,7 +24,7 @@ public class ModelGatewayConfig {
     @Bean
     public ModelGateway modelGateway() {
         if (!properties.isEnabled()) {
-            log.info("[Aidoc] 模型网关已关闭，使用本地启发式逻辑");
+            log.info("[AIDocGen] 模型网关已关闭，使用本地启发式逻辑");
             return new NoopModelGateway();
         }
         String provider = (properties.getProvider() == null ? "openai" : properties.getProvider()).toLowerCase();
@@ -32,7 +32,7 @@ public class ModelGatewayConfig {
             case "deepseek" -> new DeepSeekModelGateway(properties, objectMapper);
             case "openai" -> new OpenAiModelGateway(properties, objectMapper);
             default -> {
-                log.warn("[Aidoc] 未识别的模型供应商 {}，自动回退", provider);
+                log.warn("[AIDocGen] 未识别的模型供应商 {}，自动回退", provider);
                 yield new NoopModelGateway();
             }
         };

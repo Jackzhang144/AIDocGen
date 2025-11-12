@@ -11,7 +11,7 @@ import org.apache.ibatis.type.EnumTypeHandler;
 import java.time.LocalDateTime;
 
 /**
- * Represents an authenticated user that can access the AiDoc backend and admin panel.
+ * Represents an authenticated user that can access the AIDocGen backend and admin panel.
  */
 @Data
 @TableName("users")

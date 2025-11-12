@@ -27,7 +27,7 @@ public class Knife4jConfig {
                         .title("Project Documentation Generator API")
                         .description("Rewritten Java backend for the Project Documentation Generator platform.")
                         .version("1.0.0")
-                        .contact(new Contact().name("AiDoc Engineering").email("engineering@aidoc.internal"))
+                        .contact(new Contact().name("AIDocGen Engineering").email("engineering@aidoc.internal"))
                         .license(new License().name("Apache 2.0").url("https://www.apache.org/licenses/LICENSE-2.0")))
                 .externalDocs(new ExternalDocumentation()
                         .description("原 Node.js API 兼容说明")

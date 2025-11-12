@@ -2,7 +2,7 @@
   <div class="page">
     <header class="hero">
       <div>
-        <p class="eyebrow">AiDoc</p>
+        <p class="eyebrow">AIDocGen</p>
         <h1>代码文档生成器</h1>
         <p class="subtitle">
           异步任务、历史检索与管理员面板一应俱全。

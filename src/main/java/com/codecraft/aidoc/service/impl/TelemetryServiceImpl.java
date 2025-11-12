@@ -15,6 +15,6 @@ public class TelemetryServiceImpl implements TelemetryService {
 
     @Override
     public void track(String userId, String eventName, Map<String, ?> properties) {
-        log.info("[Aidoc] Telemetry 事件 event={} user={} props={}", eventName, userId, properties);
+        log.info("[AIDocGen] Telemetry 事件 event={} user={} props={}", eventName, userId, properties);
     }
 }

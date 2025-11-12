@@ -24,6 +24,7 @@ REDIS_HOST=127.0.0.1
 REDIS_PORT=6379
 REDIS_DB=0
 ```
+> 未搭建 Redis 时，`RateLimiterService` 会自动降级为本地桶算法，仍可在开发环境运行，但无法享受跨实例限流。
 
 ### （可选）启用 AI 模型
 ```
@@ -66,7 +67,7 @@ npm run dev               # http://localhost:5173
 仓库仍保留 `ProjectDocumentationGenerator/`，若需要使用 VS Code / JetBrains 插件：
 1. 按官方说明启动插件。
 2. 将 `MINTBASE`（或等价配置）指向 `http://localhost:8080/api`。
-3. 若调用 `/api/v1/document`，请先在 `api_keys` 表插入 SHA-1 哈希后的 `hashed_key` 并于插件端填入原始 API-Key。
+3. 若调用 `/api/v1/document`，可通过网页端管理员面板或 `POST /admin/api-keys` 创建 Key（后端会自动保存 SHA-1 哈希并回显原始值）；也可手工向 `api_keys` 表插入 `hashed_key`。
 
 ## 5. 功能验证
 1. 注册并登录（若为首次部署，注册者会自动成为管理员）。

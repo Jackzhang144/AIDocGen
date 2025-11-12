@@ -29,7 +29,7 @@ public class GlobalExceptionHandler {
                 .findFirst()
                 .map(error -> error.getDefaultMessage() == null ? ErrorCode.VALIDATION_FAILED.getMessage() : error.getDefaultMessage())
                 .orElse(ErrorCode.VALIDATION_FAILED.getMessage());
-        log.warn("[Aidoc] 参数校验失败: {}", message);
+        log.warn("[AIDocGen] 参数校验失败: {}", message);
         return ResponseEntity.status(ErrorCode.VALIDATION_FAILED.getStatus())
                 .body(ApiResponse.error(message, ErrorCode.VALIDATION_FAILED));
     }
@@ -46,7 +46,7 @@ public class GlobalExceptionHandler {
                 .findFirst()
                 .map(cv -> cv.getMessage() == null ? ErrorCode.VALIDATION_FAILED.getMessage() : cv.getMessage())
                 .orElse(ErrorCode.VALIDATION_FAILED.getMessage());
-        log.warn("[Aidoc] 约束校验失败: {}", message);
+        log.warn("[AIDocGen] 约束校验失败: {}", message);
         return ResponseEntity.status(ErrorCode.VALIDATION_FAILED.getStatus())
                 .body(ApiResponse.error(message, ErrorCode.VALIDATION_FAILED));
     }
@@ -60,7 +60,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<ApiResponse<Void>> handleBusinessException(BusinessException exception) {
         final ErrorCode errorCode = exception.getErrorCode();
-        log.warn("[Aidoc] 业务异常 [{}]: {}", errorCode.name(), exception.getMessage());
+        log.warn("[AIDocGen] 业务异常 [{}]: {}", errorCode.name(), exception.getMessage());
         return ResponseEntity.status(errorCode.getStatus())
                 .body(ApiResponse.error(exception.getMessage(), errorCode));
     }
@@ -73,7 +73,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handleUncaught(Exception exception) {
-        log.error("[Aidoc] 未处理的系统异常", exception);
+        log.error("[AIDocGen] 未处理的系统异常", exception);
         return ResponseEntity.status(ErrorCode.INTERNAL_ERROR.getStatus())
                 .body(ApiResponse.error(ErrorCode.INTERNAL_ERROR.getMessage(), ErrorCode.INTERNAL_ERROR));
     }

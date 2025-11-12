@@ -61,7 +61,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             Long userId = Long.valueOf(subject);
             return userService.findById(userId).map(UserPrincipal::new);
         } catch (NumberFormatException ex) {
-            log.warn("[Aidoc] 无效的 JWT subject: {}", subject);
+            log.warn("[AIDocGen] 无效的 JWT subject: {}", subject);
             return java.util.Optional.empty();
         }
     }

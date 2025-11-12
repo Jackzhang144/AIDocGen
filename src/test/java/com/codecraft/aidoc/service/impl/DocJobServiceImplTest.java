@@ -3,6 +3,7 @@ package com.codecraft.aidoc.service.impl;
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.codecraft.aidoc.enums.JobState;
+import com.codecraft.aidoc.exception.BusinessException;
 import com.codecraft.aidoc.mapper.DocJobMapper;
 import com.codecraft.aidoc.pojo.dto.DocGenerationResult;
 import com.codecraft.aidoc.pojo.entity.DocJobEntity;
@@ -26,6 +27,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -77,8 +79,26 @@ class DocJobServiceImplTest {
         assertTrue(docService.recorded.get());
     }
 
+    @Test
+    void requiresCodeOrContextForSubmission() {
+        DocGenerationJobRequest request = new DocGenerationJobRequest();
+        request.setLanguageId("java");
+
+        assertThrows(BusinessException.class, () -> docJobService.submitSelectionJob(2L, request));
+    }
+
+    @Test
+    void recordsSurveyMetadata() {
+        docJobService.recordIntro("job-1", "benchmark");
+        docJobService.recordIntroDiscover("job-1", "twitter");
+
+        assertEquals("benchmark", docService.readMetadata("job-1", "purpose"));
+        assertEquals("twitter", docService.readMetadata("job-1", "source"));
+    }
+
     private static class StubDocService implements DocService {
         private final AtomicBoolean recorded = new AtomicBoolean(false);
+        private final Map<String, Map<String, String>> metadata = new ConcurrentHashMap<>();
 
         @Override
         public void recordGeneration(DocGenerationJobRequest request, DocGenerationResult result, String feedbackId, long elapsedMs) {
@@ -92,7 +112,12 @@ class DocJobServiceImplTest {
 
         @Override
         public void recordMetadata(String feedbackId, String fieldName, String value) {
-            // no-op for tests
+            metadata.computeIfAbsent(feedbackId, ignored -> new ConcurrentHashMap<>())
+                    .put(fieldName, value);
+        }
+
+        String readMetadata(String feedbackId, String fieldName) {
+            return metadata.getOrDefault(feedbackId, Map.of()).get(fieldName);
         }
     }
 

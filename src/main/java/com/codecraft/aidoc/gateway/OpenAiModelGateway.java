@@ -45,7 +45,7 @@ public class OpenAiModelGateway implements ModelGateway {
         }
         String apiKey = properties.getOpenai().getApiKey();
         if (!StringUtils.hasText(apiKey)) {
-            log.warn("[Aidoc] 已启用 OpenAI 网关但未配置 API Key，将降级为本地生成");
+            log.warn("[AIDocGen] 已启用 OpenAI 网关但未配置 API Key，将降级为本地生成");
             return Optional.empty();
         }
         try {
@@ -65,7 +65,7 @@ public class OpenAiModelGateway implements ModelGateway {
                 JsonNode root = objectMapper.readTree(response.body());
                 String content = root.path("choices").path(0).path("message").path("content").asText(null);
                 if (!StringUtils.hasText(content)) {
-                    log.warn("[Aidoc] OpenAI 响应缺少 content 字段，body={}", response.body());
+                    log.warn("[AIDocGen] OpenAI 响应缺少 content 字段，body={}", response.body());
                     return Optional.empty();
                 }
                 JsonNode usage = root.path("usage");
@@ -80,9 +80,9 @@ public class OpenAiModelGateway implements ModelGateway {
                         .fallback(false)
                         .build());
             }
-            log.error("[Aidoc] 调用 OpenAI 失败，状态码 {}，body={}", response.statusCode(), response.body());
+            log.error("[AIDocGen] 调用 OpenAI 失败，状态码 {}，body={}", response.statusCode(), response.body());
         } catch (Exception ex) {
-            log.error("[Aidoc] 调用 OpenAI 接口异常，将使用本地兜底策略", ex);
+            log.error("[AIDocGen] 调用 OpenAI 接口异常，将使用本地兜底策略", ex);
         }
         return Optional.empty();
     }

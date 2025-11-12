@@ -75,14 +75,14 @@ public class DocJobServiceImpl implements DocJobService {
         docJobMapper.insert(entity);
 
         dispatchJob(jobId);
-        log.info("[Aidoc] 已入队文档任务 job={} language={}", jobId, request.getLanguageId());
+        log.info("[AIDocGen] 已入队文档任务 job={} language={}", jobId, request.getLanguageId());
         return jobId;
     }
 
     private void dispatchJob(String jobId) {
         CompletableFuture.runAsync(() -> processJob(jobId), docGenerationExecutor)
                 .exceptionally(throwable -> {
-                    log.error("[Aidoc] 文档任务 {} 执行失败", jobId, throwable);
+                    log.error("[AIDocGen] 文档任务 {} 执行失败", jobId, throwable);
                     markFailure(jobId, throwable.getMessage());
                     return null;
                 });
@@ -92,7 +92,7 @@ public class DocJobServiceImpl implements DocJobService {
         try {
             DocJobEntity entity = docJobMapper.selectById(jobId);
             if (entity == null) {
-                log.warn("[Aidoc] 无法找到任务 {}", jobId);
+                log.warn("[AIDocGen] 无法找到任务 {}", jobId);
                 return;
             }
             if (entity.getState() == JobState.SUCCEEDED) {
@@ -199,7 +199,7 @@ public class DocJobServiceImpl implements DocJobService {
         wrapper.in(DocJobEntity::getState, JobState.PENDING, JobState.IN_PROGRESS);
         List<DocJobEntity> pending = docJobMapper.selectList(wrapper);
         pending.forEach(job -> dispatchJob(job.getJobId()));
-        log.info("[Aidoc] 已恢复 {} 个未完成的文档任务", pending.size());
+        log.info("[AIDocGen] 已恢复 {} 个未完成的文档任务", pending.size());
     }
 
     private String toJson(Object value) {

@@ -12,7 +12,7 @@ public class NoopModelGateway implements ModelGateway {
 
     @Override
     public Optional<ModelGatewayResult> generateDocstring(ModelGatewayRequest request) {
-        log.debug("[Aidoc] 模型网关未启用，回退至本地启发式生成");
+        log.debug("[AIDocGen] 模型网关未启用，回退至本地启发式生成");
         return Optional.empty();
     }
 }

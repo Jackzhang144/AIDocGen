@@ -65,7 +65,7 @@ public class DocumentationServiceImpl implements DocumentationService {
             docBody = wrapWithComments(docBody, languageId, commentFormat);
         }
 
-        log.info("[Aidoc] 文档生成完成 target={} provider={} format={}", synopsis.getName(),
+        log.info("[AIDocGen] 文档生成完成 target={} provider={} format={}", synopsis.getName(),
                 gatewayResult.getProvider(), format.getId());
 
         return DocGenerationResult.builder()

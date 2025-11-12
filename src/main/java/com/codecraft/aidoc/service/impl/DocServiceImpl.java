@@ -46,7 +46,7 @@ public class DocServiceImpl implements DocService {
         entity.setModelProvider(result.getModelProvider());
         entity.setLatencyMs(result.getInferenceLatencyMs());
         docMapper.insert(entity);
-        log.info("[Aidoc] 已保存文档生成记录 user={} feedbackId={}", request.getUserId(), feedbackId);
+        log.info("[AIDocGen] 已保存文档生成记录 user={} feedbackId={}", request.getUserId(), feedbackId);
     }
 
     @Override
@@ -56,7 +56,7 @@ public class DocServiceImpl implements DocService {
         wrapper.eq(DocEntity::getFeedbackId, feedbackId)
                 .set(DocEntity::getFeedback, score);
         docMapper.update(null, wrapper);
-        log.info("[Aidoc] 记录文档反馈 feedbackId={} score={}", feedbackId, score);
+        log.info("[AIDocGen] 记录文档反馈 feedbackId={} score={}", feedbackId, score);
     }
 
     @Override
@@ -72,6 +72,6 @@ public class DocServiceImpl implements DocService {
             }
         }
         docMapper.update(null, wrapper);
-        log.debug("[Aidoc] 更新文档元数据 feedbackId={} {}=>{}", feedbackId, fieldName, value);
+        log.debug("[AIDocGen] 更新文档元数据 feedbackId={} {}=>{}", feedbackId, fieldName, value);
     }
 }

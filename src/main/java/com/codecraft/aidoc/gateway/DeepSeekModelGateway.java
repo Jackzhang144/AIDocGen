@@ -43,7 +43,7 @@ public class DeepSeekModelGateway implements ModelGateway {
         }
         String apiKey = properties.getDeepseek().getApiKey();
         if (!StringUtils.hasText(apiKey)) {
-            log.warn("[Aidoc] 已选择 DeepSeek 但未配置 API Key，自动降级");
+            log.warn("[AIDocGen] 已选择 DeepSeek 但未配置 API Key，自动降级");
             return Optional.empty();
         }
         try {
@@ -63,7 +63,7 @@ public class DeepSeekModelGateway implements ModelGateway {
                 JsonNode root = objectMapper.readTree(response.body());
                 String content = root.path("choices").path(0).path("message").path("content").asText(null);
                 if (!StringUtils.hasText(content)) {
-                    log.warn("[Aidoc] DeepSeek 响应缺少 content 字段，body={}", response.body());
+                    log.warn("[AIDocGen] DeepSeek 响应缺少 content 字段，body={}", response.body());
                     return Optional.empty();
                 }
                 JsonNode usage = root.path("usage");
@@ -78,9 +78,9 @@ public class DeepSeekModelGateway implements ModelGateway {
                         .fallback(false)
                         .build());
             }
-            log.error("[Aidoc] 调用 DeepSeek 失败，状态码 {}，body={}", response.statusCode(), response.body());
+            log.error("[AIDocGen] 调用 DeepSeek 失败，状态码 {}，body={}", response.statusCode(), response.body());
         } catch (Exception ex) {
-            log.error("[Aidoc] 调用 DeepSeek 接口异常，降级到本地生成", ex);
+            log.error("[AIDocGen] 调用 DeepSeek 接口异常，降级到本地生成", ex);
         }
         return Optional.empty();
     }

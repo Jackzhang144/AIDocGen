@@ -1,7 +1,7 @@
 package com.codecraft.aidoc.enums;
 
 /**
- * Supported user roles within the AiDoc platform.
+ * Supported user roles within the AIDocGen platform.
  */
 public enum UserRole {
     STANDARD,

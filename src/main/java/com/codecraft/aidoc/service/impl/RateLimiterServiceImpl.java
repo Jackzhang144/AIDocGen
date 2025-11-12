@@ -57,12 +57,12 @@ public class RateLimiterServiceImpl implements RateLimiterService {
                 if (allowed != null) {
                     boolean success = allowed == 1L;
                     if (!success) {
-                        log.warn("[Aidoc] Redis 限流触发 key={} limit={}", key, limit);
+                        log.warn("[AIDocGen] Redis 限流触发 key={} limit={}", key, limit);
                     }
                     return success;
                 }
             } catch (Exception ex) {
-                log.warn("[Aidoc] Redis 限流执行异常，自动回退到内存模式", ex);
+                log.warn("[AIDocGen] Redis 限流执行异常，自动回退到内存模式", ex);
             }
         }
         return tryConsumeInMemory(key, limit, windowSeconds);
@@ -83,7 +83,7 @@ public class RateLimiterServiceImpl implements RateLimiterService {
             }
             int value = bucket.counter.incrementAndGet();
             if (value > limit) {
-                log.warn("[Aidoc] 内存限流触发 key={} limit={}", key, limit);
+                log.warn("[AIDocGen] 内存限流触发 key={} limit={}", key, limit);
                 return false;
             }
             return true;

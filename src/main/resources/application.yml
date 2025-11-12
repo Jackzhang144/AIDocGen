@@ -92,7 +92,7 @@ web:
 
 security:
   jwt:
-    secret: change-me-in-prod
+    secret: CodeCraft
     expiration-ms: 86400000
   admin:
     username: admin

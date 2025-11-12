@@ -27,15 +27,15 @@ public class LoggingAspect {
     public Object logAround(ProceedingJoinPoint joinPoint) throws Throwable {
         final String signature = joinPoint.getSignature().toShortString();
         final long start = System.currentTimeMillis();
-        log.debug("[Aidoc] 进入 {}", signature);
+        log.debug("[AIDocGen] 进入 {}", signature);
         try {
             Object result = joinPoint.proceed();
             final long elapsed = System.currentTimeMillis() - start;
-            log.debug("[Aidoc] 完成 {} 耗时 {} ms", signature, elapsed);
+            log.debug("[AIDocGen] 完成 {} 耗时 {} ms", signature, elapsed);
             return result;
         } catch (Throwable throwable) {
             final long elapsed = System.currentTimeMillis() - start;
-            log.warn("[Aidoc] 执行 {} 发生异常，耗时 {} ms，原因：{}", signature, elapsed, throwable.getMessage());
+            log.warn("[AIDocGen] 执行 {} 发生异常，耗时 {} ms，原因：{}", signature, elapsed, throwable.getMessage());
             throw throwable;
         }
     }
