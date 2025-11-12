@@ -1,10 +1,12 @@
+# Example configuration template for local development.
+# Copy to application.yml and fill in environment-specific secrets.
 spring:
   application:
     name: project-documentation-generator
   datasource:
     url: jdbc:mysql://localhost:3306/aiddoc?useSSL=false&serverTimezone=UTC
-    username: root
-    password:
+    username: YOUR_DB_USERNAME
+    password: YOUR_DB_PASSWORD
     driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
       maximum-pool-size: 20
@@ -20,7 +22,7 @@ spring:
     redis:
       host: 127.0.0.1
       port: 6379
-      password:
+      password: YOUR_REDIS_PASSWORD
       database: 0
       timeout: 3000
 
@@ -62,14 +64,14 @@ ai:
     provider: deepseek
     openai:
       base-url: https://api.openai.com/v1
-      api-key:
+      api-key: YOUR_OPENAI_API_KEY
       model: gpt-4o-mini
       max-output-tokens: 512
       temperature: 0.15
       timeout-ms: 20000
     deepseek:
       base-url: https://api.deepseek.com/v1
-      api-key: sk-d46f6311bacc4dbaa79766f9ca16b78f
+      api-key: YOUR_DEEPSEEK_API_KEY
       model: deepseek-chat
       max-output-tokens: 512
       temperature: 0.2
@@ -94,9 +96,9 @@ web:
 
 security:
   jwt:
-    secret: CodeCraft
+    secret: YOUR_JWT_SECRET
     expiration-ms: 86400000
   admin:
-    username: admin
-    password: admin
+    username: YOUR_ADMIN_USERNAME
+    password: YOUR_ADMIN_PASSWORD
     email: admin@example.com

@@ -39,7 +39,12 @@ mysql -uroot -p aiddoc < src/main/resources/schema.sql
 ```
 
 ## 配置说明
-- **数据库**：通过 `APP_DATASOURCE_URL/USERNAME/PASSWORD` 或直接编辑 `application.yml`。
+在首次启动前请将模板复制为真实配置并填写私密字段：
+```bash
+cp src/main/resources/application-example.yml src/main/resources/application.yml
+```
+`application.yml` 已加入 `.gitignore`，避免密钥误提交；如需调整默认值，请同步在模板中维护占位符说明。
+- **数据库**：通过 `APP_DATASOURCE_URL/USERNAME/PASSWORD` 或在 `application.yml` 中填写。
 - **Redis（可选）**：`spring.data.redis.*`，缺省则自动退回本地桶算法。
 - **AI 网关**：
   ```bash

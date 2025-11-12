@@ -10,6 +10,8 @@
 | 数据库 | MySQL 8（默认库名 `aiddoc`） |
 | 缓存/限流 | Redis 6+（可选） |
 
+> **配置模板**：请先执行 `cp src/main/resources/application-example.yml src/main/resources/application.yml`，再在新文件中填写数据库、Redis、AI Key 等私密字段；仓库只保留 `*-example` 模板，真实配置已被 `.gitignore` 排除。
+
 ### 初始化数据库
 ```bash
 mysql -uroot -p -e "CREATE DATABASE IF NOT EXISTS aiddoc CHARACTER SET utf8mb4;"

@@ -23,6 +23,7 @@
 | `/auth/**`、`/`, `/health`, `/actuator/**` | 无 | 公开访问，用于登录/探活。 |
 
 跨域白名单位于 `web.cors.allowed-origins`（默认 `http://localhost:5173`）。
+> 所有上述配置均位于 `src/main/resources/application-example.yml` 模板中；复制为 `application.yml` 后即可按环境覆盖，而不会将真实密钥提交到 Git。
 
 ### 速率限制
 - **异步生成接口**：STANDARD 用户每 15 分钟默认 100 次（`DocController.USER_RATE_WINDOW_SECONDS`），PREMIUM/ADMIN 不限；配额可在管理员面板调整，`-1` 代表关闭限制。

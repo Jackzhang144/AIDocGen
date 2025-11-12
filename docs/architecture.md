@@ -54,6 +54,7 @@ Vue Web ──HTTP──> Spring Boot 后端 ──> OpenAI/DeepSeek(可选)
 - **Redis**（可选）：用于分布式限流与未来的消息排队；未配置时自动退化为本地桶算法。
 - **OpenAI / DeepSeek**（可选）：配置 `AI_GATEWAY_*` 环境变量后启用真实模型；未配置时自动回退到启发式生成。
 - **环境变量**：`security.admin.*` 注入默认管理员；`APP_DATASOURCE_*` 指定数据库连接；`web.cors.*` 控制跨域。
+- **配置模板**：仓库提供 `src/main/resources/application-example.yml`；复制为 `application.yml` 后填写私密信息即可，真实文件不会进入 Git。
 
 ## 运行方式
 

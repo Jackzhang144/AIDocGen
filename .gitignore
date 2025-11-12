@@ -52,6 +52,8 @@ yarn-error.log*
 frontend/.env
 frontend/.env.*
 !frontend/.env.example
+src/main/resources/application.yml
+!src/main/resources/application-example.yml
 
 ### OS ###
 .DS_Store

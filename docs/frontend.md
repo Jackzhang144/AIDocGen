@@ -70,6 +70,7 @@ npm run dev         # 启动 Vite 开发服务器，默认端口 5173
 - 所有请求都走 `/api` 前缀，保持与 Spring Boot `server.servlet.context-path=/api` 一致。
 - 后端新增的全局 CORS 白名单位于 `web.cors.allowed-origins`，默认包含 `http://localhost:5173`；线上可通过环境变量覆盖。
 - 认证信息保存在本地 `localStorage`，刷新页面后仍会自动附带 `Authorization` 头。
+- 若需要修改后端连接、CORS 或 AI Key，请复制 `src/main/resources/application-example.yml` 为 `application.yml` 并只在本地编辑；实际配置已被 `.gitignore` 排除，防止敏感信息泄露。
 
 ## 可扩展建议
 1. 引入 Pinia/Redux 等状态管理，支持多任务同时展示。
