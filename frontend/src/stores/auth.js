@@ -1,51 +1,44 @@
-import { computed, reactive } from 'vue';
+import { defineStore } from 'pinia'
+import { computed, ref } from 'vue'
+import { useRouter } from 'vue-router'
+import apiClient from '../api/client'
 
-const TOKEN_KEY = 'aidoc_token';
-const USER_KEY = 'aidoc_user';
+export const useAuthStore = defineStore('auth', () => {
+  const router = useRouter()
+  const token = ref(localStorage.getItem('token'))
+  const storedUser = localStorage.getItem('user')
+  const user = ref(storedUser ? JSON.parse(storedUser) : null)
 
-const state = reactive({
-  token: localStorage.getItem(TOKEN_KEY) || '',
-  user: safeParse(localStorage.getItem(USER_KEY))
-});
+  const isAdmin = computed(() => user.value?.role === 'ADMIN')
 
-function safeParse(raw) {
-  try {
-    return raw ? JSON.parse(raw) : null;
-  } catch (error) {
-    return null;
+  function setToken(newToken) {
+    token.value = newToken
+    localStorage.setItem('token', newToken)
   }
-}
 
-export function useAuthStore() {
-  const setAuth = (payload) => {
-    state.token = payload.token;
-    state.user = {
-      username: payload.username,
-      email: payload.email,
-      role: payload.role,
-      apiQuota: payload.apiQuota
-    };
-    localStorage.setItem(TOKEN_KEY, state.token);
-    localStorage.setItem(USER_KEY, JSON.stringify(state.user));
-  };
+  function setUser(newUser) {
+    user.value = newUser
+    localStorage.setItem('user', JSON.stringify(newUser))
+  }
 
-  const logout = () => {
-    state.token = '';
-    state.user = null;
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(USER_KEY);
-  };
+  async function login(credentials) {
+    const data = await apiClient.login(credentials)
+    setToken(data.token)
+    setUser({
+      username: data.username,
+      email: data.email,
+      role: data.role,
+      apiQuota: data.apiQuota
+    })
+  }
 
-  const isAuthenticated = computed(() => Boolean(state.token));
-  const isAdmin = computed(() => state.user?.role === 'ADMIN');
-  const isPremium = computed(() => state.user?.role === 'PREMIUM' || state.user?.role === 'ADMIN');
+  function logout() {
+    token.value = null
+    user.value = null
+    localStorage.removeItem('token')
+    localStorage.removeItem('user')
+    router.push({ name: 'login' })
+  }
 
-  return {
-    state,
-    setAuth,
-    logout,
-    isAuthenticated,
-    isAdmin,
-    isPremium
-  };
-}
+  return { token, user, isAdmin, login, logout }
+})

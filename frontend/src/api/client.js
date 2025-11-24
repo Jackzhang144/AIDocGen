@@ -1,48 +1,89 @@
-import axios from 'axios';
+import axios from 'axios'
+import { useAuthStore } from '../stores/auth'
 
-const defaultBaseUrl = import.meta.env.VITE_API_BASE_URL ?? '/api';
+const apiClient = axios.create({
+  baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
+})
 
-const TOKEN_KEY = 'aidoc_token';
-
-const httpClient = axios.create({
-  baseURL: defaultBaseUrl,
-  timeout: Number(import.meta.env.VITE_HTTP_TIMEOUT_MS ?? 20000)
-});
-
-httpClient.interceptors.request.use((config) => {
-  const token = localStorage.getItem(TOKEN_KEY);
+apiClient.interceptors.request.use(config => {
+  const authStore = useAuthStore()
+  const token = authStore.token
   if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+    config.headers.Authorization = `Bearer ${token}`
   }
-  return config;
-});
+  return config
+})
 
-httpClient.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    const message = error.response?.data?.message ?? error.message;
-    return Promise.reject(new Error(message));
+apiClient.interceptors.response.use(
+  response => response,
+  error => {
+    if (error.response?.status === 401) {
+      const authStore = useAuthStore()
+      authStore.logout()
+    }
+    const message = error.response?.data?.message || error.message
+    return Promise.reject(new Error(message))
   }
-);
+)
 
-export const submitDocJob = (payload) => httpClient.post('/docs/write/v3', payload);
+const unwrap = (response) => response.data?.data ?? response.data
 
-export const fetchJobStatus = (jobId) => httpClient.get(`/docs/worker/${jobId}`);
-
-export const submitFeedback = (feedbackPayload) => httpClient.post('/docs/feedback', feedbackPayload);
-
-export const login = (payload) => httpClient.post('/auth/login', payload);
-
-export const register = (payload) => httpClient.post('/auth/register', payload);
-
-export const fetchHistory = (params) => httpClient.get('/docs/history', { params });
-
-export const fetchUsers = () => httpClient.get('/admin/users');
-
-export const updateUser = (id, payload) => httpClient.put(`/admin/users/${id}`, payload);
-
-export const listApiKeys = () => httpClient.get('/admin/api-keys');
-
-export const createApiKey = (payload) => httpClient.post('/admin/api-keys', payload);
-
-export const deleteApiKey = (id) => httpClient.delete(`/admin/api-keys/${id}`);
+export default {
+  async login(credentials) {
+    const res = await apiClient.post('/auth/login', credentials)
+    return unwrap(res)
+  },
+  async register(userInfo) {
+    const res = await apiClient.post('/auth/register', userInfo)
+    return unwrap(res)
+  },
+  async submitDocJob(payload) {
+    const url = payload.isSelection ? '/docs/write/v3' : '/docs/write/v3/no-selection'
+    const res = await apiClient.post(url, payload)
+    return unwrap(res) // { id }
+  },
+  async fetchJobStatus(id) {
+    const res = await apiClient.get(`/docs/worker/${id}`)
+    return unwrap(res) // { id, state, reason, data }
+  },
+  async submitFeedback(payload) {
+    const res = await apiClient.post('/docs/feedback', payload)
+    return unwrap(res)
+  },
+  async fetchHistory(params) {
+    const res = await apiClient.get('/docs/history', { params })
+    return unwrap(res) // { total, page, size, records }
+  },
+  async fetchUsers() {
+    const res = await apiClient.get('/admin/users')
+    return unwrap(res)
+  },
+  async updateUser(id, payload) {
+    const res = await apiClient.put(`/admin/users/${id}`, payload)
+    return unwrap(res)
+  },
+  async listProviders() {
+    const res = await apiClient.get('/admin/providers')
+    return unwrap(res)
+  },
+  async saveProvider(payload) {
+    const res = await apiClient.post('/admin/providers', payload)
+    return unwrap(res)
+  },
+  async activateProvider(id) {
+    const res = await apiClient.post(`/admin/providers/${id}/activate`)
+    return unwrap(res)
+  },
+  async document(payload) {
+    const res = await apiClient.post('/v1/document', payload)
+    return unwrap(res)
+  },
+  async listLanguages() {
+    const res = await apiClient.get('/v1/list/languages')
+    return unwrap(res)
+  },
+  async listFormats() {
+    const res = await apiClient.get('/v1/list/formats')
+    return unwrap(res)
+  }
+}

@@ -20,6 +20,8 @@ import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.StringJoiner;
 
 /**
  * 负责协调本地启发式逻辑与大模型网关，生成高质量的代码文档。
@@ -52,6 +54,8 @@ public class DocumentationServiceImpl implements DocumentationService {
                 .commented(Boolean.TRUE.equals(request.getCommented()))
                 .synopsis(synopsis)
                 .width(request.getWidth())
+                .quality(request.getQuality())
+                .lineCommentRatio(request.getLineCommentRatio())
                 .build();
 
         ModelGatewayResult gatewayResult = modelGateway.generateDocstring(gatewayRequest)
@@ -61,15 +65,21 @@ public class DocumentationServiceImpl implements DocumentationService {
                 ? gatewayResult.getContent()
                 : renderDocBody(format, synopsis);
 
+        String headerComment = docBody;
         if (Boolean.TRUE.equals(request.getCommented())) {
             docBody = wrapWithComments(docBody, languageId, commentFormat);
         }
+
+        String annotatedCode = buildAnnotatedCode(request.getCode(), languageId, commentFormat, headerComment, request.getLineCommentRatio());
 
         log.info("[AIDocGen] 文档生成完成 target={} provider={} format={}", synopsis.getName(),
                 gatewayResult.getProvider(), format.getId());
 
         return DocGenerationResult.builder()
                 .documentation(docBody)
+                .annotatedCode(annotatedCode)
+                .rawComment(headerComment)
+                .lineComments(Map.of())
                 .preview(truncate(docBody, 240))
                 .position(languageId == LanguageId.PYTHON ? "BelowStartLine" : "Above")
                 .feedbackId(null)
@@ -304,5 +314,37 @@ public class DocumentationServiceImpl implements DocumentationService {
                 .latencyMs(0L)
                 .fallback(true)
                 .build();
+    }
+
+    /**
+     * 简单的注释注入器：在代码前添加头部注释，并可选地为方法定义行添加行级注释。
+     */
+    private String buildAnnotatedCode(String code, LanguageId languageId, CommentFormat commentFormat, String header, Double lineCommentRatio) {
+        if (!StringUtils.hasText(code)) {
+            return header;
+        }
+        // 头部注释
+        StringBuilder builder = new StringBuilder();
+        builder.append(wrapWithComments(header, languageId, commentFormat)).append("\n");
+
+        String[] lines = code.split("\\r?\\n");
+        double ratio = lineCommentRatio == null ? 0.3 : Math.max(0, Math.min(1, lineCommentRatio));
+        boolean annotateFirst = ratio > 0.01;
+        String linePrefix = switch (commentFormat) {
+            case JSDOC -> "//";
+            case PYTHON_DOCSTRING, NUMPY -> "#";
+            case XML -> "///";
+            case RDOC -> "#";
+            case LINE -> "//";
+        };
+        for (int i = 0; i < lines.length; i++) {
+            String line = lines[i];
+            builder.append(line);
+            if (annotateFirst && i == 0 && StringUtils.hasText(line)) {
+                builder.append(" ").append(linePrefix).append(" ").append("TODO: explain this line");
+            }
+            builder.append("\n");
+        }
+        return builder.toString().stripTrailing();
     }
 }

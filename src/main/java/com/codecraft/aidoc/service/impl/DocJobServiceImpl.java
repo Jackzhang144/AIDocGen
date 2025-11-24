@@ -108,6 +108,9 @@ public class DocJobServiceImpl implements DocJobService {
             docRequest.setFormat(request.getDocStyle());
             docRequest.setContext(request.getContext());
             docRequest.setWidth(request.getWidth());
+            docRequest.setMode(request.getMode());
+            docRequest.setQuality(request.getQuality());
+            docRequest.setLineCommentRatio(request.getLineCommentRatio());
 
             long startedAt = System.currentTimeMillis();
             DocGenerationResult result = documentationService.generateDocumentation(docRequest);
@@ -119,6 +122,9 @@ public class DocJobServiceImpl implements DocJobService {
 
             DocGenerationResult enriched = DocGenerationResult.builder()
                     .documentation(result.getDocumentation())
+                    .annotatedCode(result.getAnnotatedCode())
+                    .rawComment(result.getRawComment())
+                    .lineComments(result.getLineComments())
                     .preview(result.getPreview())
                     .position(result.getPosition())
                     .cursorMarker(result.getCursorMarker())

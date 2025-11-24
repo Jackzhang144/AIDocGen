@@ -40,4 +40,19 @@ public class DocumentGenerationRequest {
      * Width hint used when wrapping comment blocks.
      */
     private Integer width;
+
+    /**
+     * 生成模式：text（仅注释文本）、inserted（带注释的完整代码）。
+     */
+    private String mode;
+
+    /**
+     * 质量档位：fast/balanced/deep。
+     */
+    private String quality;
+
+    /**
+     * 行内注释比例（0-1），用于提示模型控制行级注释密度。
+     */
+    private Double lineCommentRatio;
 }

@@ -1,9 +1,12 @@
 package com.codecraft.aidoc.config;
 
 import com.codecraft.aidoc.gateway.DeepSeekModelGateway;
+import com.codecraft.aidoc.gateway.DynamicModelGateway;
 import com.codecraft.aidoc.gateway.ModelGateway;
 import com.codecraft.aidoc.gateway.NoopModelGateway;
 import com.codecraft.aidoc.gateway.OpenAiModelGateway;
+import com.codecraft.aidoc.pojo.entity.AiProviderConfigEntity;
+import com.codecraft.aidoc.service.AiProviderConfigService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,21 +23,10 @@ public class ModelGatewayConfig {
 
     private final ModelGatewayProperties properties;
     private final ObjectMapper objectMapper;
+    private final AiProviderConfigService providerConfigService;
 
     @Bean
     public ModelGateway modelGateway() {
-        if (!properties.isEnabled()) {
-            log.info("[AIDocGen] 模型网关已关闭，使用本地启发式逻辑");
-            return new NoopModelGateway();
-        }
-        String provider = (properties.getProvider() == null ? "openai" : properties.getProvider()).toLowerCase();
-        return switch (provider) {
-            case "deepseek" -> new DeepSeekModelGateway(properties, objectMapper);
-            case "openai" -> new OpenAiModelGateway(properties, objectMapper);
-            default -> {
-                log.warn("[AIDocGen] 未识别的模型供应商 {}，自动回退", provider);
-                yield new NoopModelGateway();
-            }
-        };
+        return new DynamicModelGateway(providerConfigService, properties, objectMapper);
     }
 }

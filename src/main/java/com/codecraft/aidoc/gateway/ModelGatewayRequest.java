@@ -53,4 +53,14 @@ public class ModelGatewayRequest {
      * 期望的最大行宽，用于提示模型控制长度。
      */
     private Integer width;
+
+    /**
+     * 质量档位（fast/balanced/deep），用于提示模型控制长度与细节。
+     */
+    private String quality;
+
+    /**
+     * 行内注释比例，提示模型在多大程度上添加行级注释。
+     */
+    private Double lineCommentRatio;
 }

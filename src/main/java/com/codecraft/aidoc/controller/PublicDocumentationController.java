@@ -53,6 +53,13 @@ public class PublicDocumentationController {
         DocGenerationResult result = documentationService.generateDocumentation(request);
         DocumentGenerationResponse response = DocumentGenerationResponse.builder()
                 .documentation(result.getDocumentation())
+                .annotatedCode(result.getAnnotatedCode())
+                .rawComment(result.getRawComment())
+                .lineComments(result.getLineComments())
+                .docFormat(result.getDocFormat())
+                .commentFormat(result.getCommentFormat())
+                .modelProvider(result.getModelProvider())
+                .inferenceLatencyMs(result.getInferenceLatencyMs())
                 .build();
         return ApiResponse.ok("文档生成成功", response);
     }

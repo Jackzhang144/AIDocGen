@@ -37,4 +37,14 @@ public class DocGenerationJobRequest {
     private String mode;
 
     private String source;
+
+    /**
+     * 质量档位：fast/balanced/deep。
+     */
+    private String quality;
+
+    /**
+     * 行内注释比例（0-1）。
+     */
+    private Double lineCommentRatio;
 }

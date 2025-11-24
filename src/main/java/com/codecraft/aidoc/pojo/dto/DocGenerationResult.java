@@ -58,4 +58,19 @@ public class DocGenerationResult {
      * 单次推理耗时（毫秒），便于性能追踪。
      */
     private Long inferenceLatencyMs;
+
+    /**
+     * 已插入注释的完整代码（可选，便于 IDE 直接替换）。
+     */
+    private String annotatedCode;
+
+    /**
+     * 原始块级注释文本（未包裹代码）。
+     */
+    private String rawComment;
+
+    /**
+     * 行号到注释的映射，供前端高亮或旁注。
+     */
+    private java.util.Map<Integer, String> lineComments;
 }

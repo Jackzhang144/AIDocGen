@@ -117,6 +117,12 @@ public class OpenAiModelGateway implements ModelGateway {
         builder.append("参数列表: ").append(synopsis.getParameters() == null ? List.of() : synopsis.getParameters()).append('\n');
         builder.append("摘要: ").append(safe(synopsis.getSummary())).append('\n');
         builder.append("是否返回值: ").append(synopsis.isReturnsValue()).append('\n');
+        if (request.getQuality() != null) {
+            builder.append("质量档位: ").append(request.getQuality()).append('\n');
+        }
+        if (request.getLineCommentRatio() != null) {
+            builder.append("行级注释比例: ").append(request.getLineCommentRatio()).append('\n');
+        }
         if (StringUtils.hasText(request.getContext())) {
             builder.append("上下文片段: \n").append(request.getContext()).append('\n');
         }
@@ -127,6 +133,7 @@ public class OpenAiModelGateway implements ModelGateway {
         if (request.getWidth() != null && request.getWidth() > 0) {
             builder.append("每行尽量不超过 ").append(request.getWidth()).append(" 列。");
         }
+        builder.append("请给出精炼的块级注释，必要时生成关键行的行内注释，避免冗余。");
         builder.append("\n原始代码如下：\n```\n").append(request.getCode()).append("\n```");
         return builder.toString();
     }

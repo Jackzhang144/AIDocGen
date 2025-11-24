@@ -111,10 +111,16 @@ public class DeepSeekModelGateway implements ModelGateway {
         StringBuilder builder = new StringBuilder();
         var synopsis = request.getSynopsis();
         builder.append("为下列 ").append(request.getLanguageId().getId())
-                .append(" 代码生成 ").append(request.getDocFormat().getId()).append(" 风格文档。\n");
+                .append(" 代码生成 ").append(request.getDocFormat().getId()).append(" 风格文档，并给出必要的行级注释。\n");
         builder.append("结构类型: ").append(synopsis.getKind()).append("，名称: ").append(synopsis.getName()).append('\n');
         builder.append("参数: ").append(synopsis.getParameters()).append("，是否返回值: ").append(synopsis.isReturnsValue()).append('\n');
         builder.append("摘要: ").append(synopsis.getSummary()).append('\n');
+        if (request.getQuality() != null) {
+            builder.append("质量档位: ").append(request.getQuality()).append('\n');
+        }
+        if (request.getLineCommentRatio() != null) {
+            builder.append("行级注释比例: ").append(request.getLineCommentRatio()).append('\n');
+        }
         if (StringUtils.hasText(request.getContext())) {
             builder.append("上下文片段:\n").append(request.getContext()).append('\n');
         }
