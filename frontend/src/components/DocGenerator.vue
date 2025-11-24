@@ -138,7 +138,7 @@ const form = reactive({
 const languages = [
   { label: 'Python', value: 'python' },
   { label: 'Java', value: 'java' },
-  { label: 'TypeScript', value: 'ts' },
+  { label: 'TypeScript', value: 'typescript' },
   { label: 'Go', value: 'go' },
   { label: 'C#', value: 'csharp' },
   { label: 'C++', value: 'cpp' }

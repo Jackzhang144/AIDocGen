@@ -93,7 +93,7 @@ public class DeepSeekModelGateway implements ModelGateway {
                 "max_tokens", cfg.getMaxOutputTokens(),
                 "messages", List.of(
                         Map.of("role", "system", "content", buildSystemPrompt()),
-                        Map.of("role", "user", "content", request.getCode())
+                        Map.of("role", "user", "content", buildUserPrompt(request))
                 )
         );
     }
@@ -102,6 +102,31 @@ public class DeepSeekModelGateway implements ModelGateway {
         return """
                 你是深度代码文档助手，请按照调用方要求生成精准、结构化且不编造事实的中文注释。
                 """;
+    }
+
+    /**
+     * 提供更丰富的上下文，确保 DeepSeek 生成符合预期的注释格式与内容。
+     */
+    private String buildUserPrompt(ModelGatewayRequest request) {
+        StringBuilder builder = new StringBuilder();
+        var synopsis = request.getSynopsis();
+        builder.append("为下列 ").append(request.getLanguageId().getId())
+                .append(" 代码生成 ").append(request.getDocFormat().getId()).append(" 风格文档。\n");
+        builder.append("结构类型: ").append(synopsis.getKind()).append("，名称: ").append(synopsis.getName()).append('\n');
+        builder.append("参数: ").append(synopsis.getParameters()).append("，是否返回值: ").append(synopsis.isReturnsValue()).append('\n');
+        builder.append("摘要: ").append(synopsis.getSummary()).append('\n');
+        if (StringUtils.hasText(request.getContext())) {
+            builder.append("上下文片段:\n").append(request.getContext()).append('\n');
+        }
+        builder.append("请输出纯文本，不要使用 Markdown 代码块；不得编造不存在的参数或行为。");
+        if (request.isCommented()) {
+            builder.append(" 生成的内容需可直接置入 ").append(request.getCommentFormat()).append(" 注释。");
+        }
+        if (request.getWidth() != null && request.getWidth() > 0) {
+            builder.append(" 每行尽量不超过 ").append(request.getWidth()).append(" 列。");
+        }
+        builder.append("\n原始代码:\n").append(request.getCode());
+        return builder.toString();
     }
 
     private String normalizeBaseUrl(String baseUrl) {
