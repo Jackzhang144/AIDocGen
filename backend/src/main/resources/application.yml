@@ -1,0 +1,41 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: code-ai-backend
+  datasource:
+    # 本地开发直接使用明文配置，提交前若包含真实密码请自行清理
+    url: jdbc:mysql://localhost:3306/code_ai_db?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: root
+    password:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  mvc:
+    # 扩大异步请求超时时间，避免 WebClient 调用长时间处理导致 30 秒超时
+    async:
+      request-timeout: 600000
+  jpa:
+    hibernate:
+      ddl-auto: update # 开发阶段使用 update 自动建表/更新表结构
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+# DeepSeek API 配置
+deepseek:
+  api:
+    key: sk-77334fa90e194e9c9d92b0e6089faaea
+    url: https://api.deepseek.com/v1/chat/completions
+    timeout-ms: 600000
+
+ai:
+  daily-limit: 100 # 普通用户每日调用上限，会员/管理员不限
+
+admin:
+  username: admin
+  password: admin123
+
+jwt:
+  secret: change-me-please-change-me-please-change-me
+  expiration-ms: 86400000

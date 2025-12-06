@@ -1,0 +1,38 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: code-ai-backend
+  datasource:
+    url: jdbc:mysql://localhost:3306/code_ai_db?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: root
+    password: your_password
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  mvc:
+    async:
+      request-timeout: 600000
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+deepseek:
+  api:
+    key: your_api_key
+    url: https://api.deepseek.com/v1/chat/completions
+    timeout-ms: 20000
+
+ai:
+  daily-limit: 100
+
+admin:
+  username: admin
+  password: admin123
+
+jwt:
+  secret: change-me-please-change-me-please-change-me
+  expiration-ms: 86400000

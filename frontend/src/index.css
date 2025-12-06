@@ -1,0 +1,65 @@
+/*
+  The original had a dark theme default and switched to light on media query.
+  I will enforce a light theme default, and simplify the styling.
+*/
+
+:root {
+    font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+    font-weight: 400;
+
+    /* Force light theme colors */
+    color-scheme: light;
+    color: #213547; /* Dark text */
+    background-color: #f0f2f5; /* Light grey background for the app */
+
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+    font-weight: 500;
+    color: #1a73e8; /* A simple, pleasant blue */
+    text-decoration: inherit;
+}
+a:hover {
+    color: #0c61d5;
+}
+
+body {
+    margin: 0;
+    /* Use flex for the whole body, but App.jsx handles the main layout */
+    display: flex;
+    min-width: 320px;
+    min-height: 100vh;
+    background-color: #f0f2f5; /* Match root background */
+}
+
+h1 {
+    font-size: 3.2em;
+    line-height: 1.1;
+}
+
+button {
+    border-radius: 8px;
+    border: 1px solid transparent;
+    padding: 0.6em 1.2em;
+    font-size: 1em;
+    font-weight: 500;
+    font-family: inherit;
+    background-color: #e0e0e0; /* Light button background */
+    color: #213547; /* Dark text for button */
+    cursor: pointer;
+    transition: border-color 0.25s;
+}
+button:hover {
+    border-color: #1a73e8;
+}
+button:focus,
+button:focus-visible {
+    outline: 4px auto -webkit-focus-ring-color;
+}
+
+/* Remove media query to enforce light theme */

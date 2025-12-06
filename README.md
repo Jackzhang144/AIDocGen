@@ -1,98 +1,64 @@
-# AIDocGen 文档生成平台
+# SmartCodeEditor
 
-Spring Boot + Vue 的全栈应用，提供异步代码文档生成、历史留档、管理员配额与 API-Key 管理，并兼容 Mintlify Writer 风格的公共 API。
+本仓库提供「本地文件编辑 + AI 注释/解释/文档」的一体化体验，包含 Spring Boot 后端与 Vite + React 前端。前端使用浏览器原生文件系统权限编辑本地文件，后端负责 AI 调用、用户认证与调用统计。
 
-## 核心特性
-- 📄 **异步文档生成**：`/docs/write/v3` 入队，`/docs/worker/{id}` 轮询，可回填 `feedback/intro`。
-- 📚 **历史检索**：按关键字、语言、来源分页查看生成记录。
-- 🔐 **双重鉴权**：内部接口用 JWT，公共 `/api/v1/**` 用 `API-KEY`，并支持滑动窗口限流（Redis→内存降级）。
-- 🧑‍💼 **管理员面板**：网页端即可调整用户角色/配额、创建或删除 API-Key。
-- 🤖 **多模型网关**：OpenAI、DeepSeek 或本地启发式兜底，可在配置中热切换。
-
-## 目录结构
-```
-.
-├── src/                         # Spring Boot 后端（context-path=/api）
-│   └── main/java/com/codecraft/aidoc
-│       ├── controller/          # Doc/Auth/Admin/Public 控制器
-│       ├── service/             # DocJob/Documentation/RateLimiter 等服务
-│       ├── gateway/             # OpenAI / DeepSeek / Noop 网关
-│       └── security/            # JWT + API-Key 过滤器
-├── frontend/                    # Vue 3 + Vite 管理控制台
-├── docs/                        # API、架构、前端、使用说明
-└── ProjectDocumentationGenerator/ # 兼容官方插件的历史代码
-```
-
-## 环境要求
-| 组件 | 版本 |
-| --- | --- |
-| JDK | 17 |
-| Maven | 3.9+ |
-| Node.js | 18+（运行前端） |
-| MySQL | 8.x（默认库名 `aiddoc`） |
-| Redis | 6+（可选，提供分布式限流） |
-
-执行 `src/main/resources/schema.sql` 以初始化 `docs`、`users`、`doc_jobs`、`api_keys` 等表：
-```bash
-mysql -uroot -p -e "CREATE DATABASE IF NOT EXISTS aiddoc CHARACTER SET utf8mb4;"
-mysql -uroot -p aiddoc < src/main/resources/schema.sql
-```
-
-## 配置说明
-在首次启动前请将模板复制为真实配置并填写私密字段：
-```bash
-cp src/main/resources/application-example.yml src/main/resources/application.yml
-```
-`application.yml` 已加入 `.gitignore`，避免密钥误提交；如需调整默认值，请同步在模板中维护占位符说明。
-- **数据库**：通过 `APP_DATASOURCE_URL/USERNAME/PASSWORD` 或在 `application.yml` 中填写。
-- **Redis（可选）**：`spring.data.redis.*`，缺省则自动退回本地桶算法。
-- **AI 网关**：
-  ```bash
-  AI_GATEWAY_ENABLED=true
-  AI_GATEWAY_PROVIDER=openai   # 或 deepseek
-  OPENAI_API_KEY=sk-xxx
-  DEEPSEEK_API_KEY=sk-xxx
-  ```
-- **管理员账号**：`security.admin.username/password/email`，由 `AdminAccountInitializer` 在启动时确保存在（默认配额 `-1`，即无限制）。
-- **前端代理**：`frontend/.env.local` 中调整 `VITE_API_BASE_URL`（默认 `http://localhost:8080/api`）。
+## 功能亮点
+- Monaco 编辑器 + 文件夹选择：可打开本地工程，浏览/展开目录并编辑文件。
+- AI 能力：选中文本后可生成注释、解释或文档摘要，结果在右侧面板呈现；语言支持中/英文切换。
+- 身份与配额：支持注册/登录，角色区分 USER/MEMBER/ADMIN；USER 受 `ai.daily-limit` 限制（默认 100 次/天）。
+- 管理后台：ADMIN 可在前端管理用户（增删改查、修改角色、重置密码）并查看调用总量。
+- 日志与配置：AI 请求写入 `ai_request_logs`，启动时按配置自动创建管理员账号。
 
 ## 快速开始
-1. **后端**
-   ```bash
-   mvn clean package
-   mvn spring-boot:run
-   # 服务默认监听 http://localhost:8080/api
-   ```
+前置依赖：Node 18+、Java 17、Maven 3.9+，以及可用的 MySQL（或兼容数据库）。
 
-2. **前端**
-   ```bash
-   cd frontend
-   npm install
-   npm run dev        # http://localhost:5173，已配置 /api 代理
-   ```
+1) 配置后端  
+复制 `backend/src/main/resources/application-example.yml` 为 `application.yml`，填写数据库与 DeepSeek 密钥，或使用环境变量覆盖。
 
-3. **登录体验**
-   - 首位注册用户会自动成为管理员，可通过 UI 创建额外用户、调整配额、生成 API-Key。
-   - 提交文档任务后，前端每 2 秒轮询 `/docs/worker/{id}`，完成即可查看 Output 并提交反馈。
-
-4. **（可选）官方插件联调**
-   - 进入 `ProjectDocumentationGenerator/` 按原项目说明编译。
-   - 将插件的服务地址指向 `http://localhost:8080/api`。
-   - 通过网页管理员面板创建 API-Key 后，在插件端填写原始 Key 以调用 `/api/v1/document`。
-
-## 文档与接口
-- `docs/api.md`：JWT/API-Key 鉴权、异步任务、公共 API 及错误码一览。
-- `docs/architecture.md`：后端模块、模型网关与部署拓扑。
-- `docs/frontend.md`：Vue 组件、API 客户端、交互流程。
-- `docs/usage.md`：端到端启动、联调与常见问题。
-
-常用健康检查：
+2) 启动后端
 ```bash
-curl http://localhost:8080/api/health
-curl http://localhost:8080/api/actuator/health
+cd backend
+mvn clean package
+mvn spring-boot:run
 ```
+默认端口 `8080`。可用 `mvn test` 在 H2 上运行集成测试。
 
-## 贡献与测试
-- 后端测试：`mvn test`
-- 前端检查：`npm run build`
-- 建议在提交前同步更新 `docs/*.md`（或本 README）以反映接口与配置变化。欢迎通过 Issue/PR 分享新的模型网关或前端改进思路。
+3) 启动前端
+```bash
+cd frontend
+npm install
+npm run dev
+```
+默认端口 `5173`，已开放本地 CORS 访问后端。构建发布使用 `npm run build`，代码检查使用 `npm run lint`。
+
+## 目录结构
+- `backend/src/main/java/com/codecraft`：`controller`（AI/Auth/Admin）、`service`（DeepSeek 调用与日志）、`entity`、`repository`、`security`。
+- `backend/src/main/resources`：`application.yml`/`application-example.yml`、`schema.sql` 数据表定义。
+- `frontend/src`：React 组件（文件侧边栏、Monaco 编辑器、AI 面板、认证/管理页）、`i18n.js` 语言包、`config.js` 后端地址。
+
+## 配置说明
+后端主要配置（YAML 或环境变量均可）：
+- `spring.datasource.*`：数据库连接；测试环境使用 H2。
+- `deepseek.api.key` / `DEEPSEEK_API_KEY`：AI Key（必填），`deepseek.api.url`、`deepseek.api.timeout-ms` 可调整。
+- `ai.daily-limit`：USER 角色每日调用上限，默认 100。
+- `admin.username` / `admin.password`：启动时自动创建的管理员账号。
+- `jwt.secret` / `jwt.expiration-ms`：JWT 签名密钥与过期时间。
+
+前端配置：
+- `VITE_API_URL`：前端调用的后端根地址，默认 `http://localhost:8080`。
+
+## API 概览
+- `POST /api/auth/register`：注册，返回 `username/role/token`。
+- `POST /api/auth/login`：登录，返回 JWT。
+- `POST /api/ai/process`：AI 处理，body 包含 `type`（comment/explain/document）、`code`、`fileName`、`context`（文档模式使用）、`language`（zh/en）；需携带 `Authorization: Bearer <token>`。
+- `GET /api/admin/users`：列出用户及调用总量；ADMIN 角色。
+- `POST /api/admin/users` / `PUT /api/admin/users/{id}` / `DELETE /api/admin/users/{id}`：创建、更新、删除用户（不可修改/删除自身管理员）。
+
+## 数据表
+- `users`：字段 `username/password/role/created_at/updated_at`。
+- `ai_request_logs`：记录请求类型、文件名、用户名、前 500 字符的代码片段与创建时间。
+
+## 开发小贴士
+- 生成注释时会直接替换编辑器选区；保存按钮会通过 File System Access API 写回本地文件。
+- 若调整端口或跨域策略，请同时更新 `frontend/src/config.js` 与后端 CORS 配置。
+- 请勿提交真实密钥或数据库口令，可在部署环境通过环境变量注入。

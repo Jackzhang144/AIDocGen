@@ -1,0 +1,18 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:code_ai_test;MODE=MYSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+
+deepseek:
+  api:
+    key: sk-fd3a294e6bbf47c28b3e6103a4639286
+    url: https://api.deepseek.com/v1/chat/completions
